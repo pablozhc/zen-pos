@@ -1,0 +1,20 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(powershell -Command \"Set-Location 'c:\\\\Users\\\\Pablo\\\\Downloads\\\\FLUTTER_POS\\\\flutter_application_1'; flutter run -d chrome\":*)",
+      "Bash(powershell:*)",
+      "Bash(flutter pub get:*)",
+      "Bash(flutter run:*)",
+      "Bash(printf:*)",
+      "Bash(\"C:\\\\Users\\\\Pablo\\\\AppData\\\\Local\\\\Android\\\\Sdk\\\\platform-tools\\\\adb.exe\" pair 192.168.31.196:43213)",
+      "Bash(\"C:\\\\Users\\\\Pablo\\\\AppData\\\\Local\\\\Android\\\\Sdk\\\\platform-tools\\\\adb.exe\" devices)",
+      "Bash(winget install:*)",
+      "Bash(flutter build:*)",
+      "Bash(\"/c/Users/Pablo/AppData/Local/Android/Sdk/platform-tools/adb.exe\" -s R9TY601CGML install -r \"c:\\\\Users\\\\Pablo\\\\Downloads\\\\FLUTTER_POS\\\\flutter_application_1\\\\build\\\\app\\\\outputs\\\\flutter-apk\\\\app-release.apk\")",
+      "Bash(export PATH=\"/c/Program Files/nodejs:/c/Users/Pablo/AppData/Roaming/npm:$PATH\")",
+      "Bash(npx firebase deploy:*)",
+      "Bash(firebase deploy:*)",
+      "Bash(flutter clean:*)"
+    ]
+  }
+}
