@@ -77,15 +77,14 @@ class AdminSectionProfit extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
+                Wrap(
+                  spacing: 16,
+                  runSpacing: 16,
                   children: [
-                    Expanded(child: _statCard(Icons.trending_up_rounded, 'Zisk s DPH', CurrencyFormatter.format(_grossProfit), AppColors.success)),
-                    const SizedBox(width: 16),
-                    Expanded(child: _statCard(Icons.percent_rounded, 'Marže', '${_margin.toStringAsFixed(1)}%', AppColors.info)),
-                    const SizedBox(width: 16),
-                    Expanded(child: _statCard(Icons.receipt_long_rounded, 'Tržby s DPH', CurrencyFormatter.format(_totalRevenue), AppColors.primary)),
-                    const SizedBox(width: 16),
-                    Expanded(child: _statCard(Icons.shopping_cart_rounded, 'Náklady s DPH', CurrencyFormatter.format(_estimatedCost), AppColors.error)),
+                    _statCard(Icons.trending_up_rounded, 'Zisk s DPH', CurrencyFormatter.format(_grossProfit), AppColors.success),
+                    _statCard(Icons.percent_rounded, 'Marže', '${_margin.toStringAsFixed(1)}%', AppColors.info),
+                    _statCard(Icons.receipt_long_rounded, 'Tržby s DPH', CurrencyFormatter.format(_totalRevenue), AppColors.primary),
+                    _statCard(Icons.shopping_cart_rounded, 'Náklady s DPH', CurrencyFormatter.format(_estimatedCost), AppColors.error),
                   ],
                 ),
                 const SizedBox(height: 24),
@@ -102,6 +101,7 @@ class AdminSectionProfit extends StatelessWidget {
 
   Widget _statCard(IconData icon, String label, String value, Color accentColor) {
     return Container(
+      width: 240,
       padding: const EdgeInsets.fromLTRB(20, 20, 20, 18),
       decoration: BoxDecoration(
         color: AppColors.cardBackground,

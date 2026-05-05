@@ -379,34 +379,28 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // 3 KPI cards
-                Row(
+                Wrap(
+                  spacing: 16,
+                  runSpacing: 16,
                   children: [
-                    Expanded(
-                      child: _buildRevenueStatCard(
+                    _buildRevenueStatCard(
                         Icons.receipt_long_rounded,
                         'Příjmy s DPH',
                         CurrencyFormatter.format(totalRevenue),
                         AppColors.primary,
                       ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: _buildRevenueStatCard(
+                    _buildRevenueStatCard(
                         Icons.person_rounded,
                         'Průměrná útrata',
                         CurrencyFormatter.format(avgPerPayment),
                         AppColors.info,
                       ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: _buildRevenueStatCard(
+                    _buildRevenueStatCard(
                         Icons.groups_rounded,
                         'Počet plateb',
                         '$paymentCount',
                         AppColors.warning,
                       ),
-                    ),
                   ],
                 ),
                 const SizedBox(height: 24),
@@ -468,6 +462,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
 
   Widget _buildRevenueStatCard(IconData icon, String label, String value, Color accentColor) {
     return Container(
+      width: 240,
       padding: const EdgeInsets.fromLTRB(18, 18, 18, 16),
       decoration: BoxDecoration(
         color: _white,
@@ -821,34 +816,13 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-          Row(
+          Wrap(
+            spacing: 16,
+            runSpacing: 16,
             children: [
-              Expanded(
-                child: _buildRevenueStatCard(
-                  Icons.table_bar_rounded,
-                  'Aktivní stoly',
-                  '${tablesVM.activeTables.length}',
-                  AppColors.primary,
-                ),
-              ),
-              const SizedBox(width: Spacing.md),
-              Expanded(
-                child: _buildRevenueStatCard(
-                  Icons.receipt_long_rounded,
-                  'Otevřené tržby',
-                  CurrencyFormatter.format(tablesVM.openTabsTotal),
-                  AppColors.warning,
-                ),
-              ),
-              const SizedBox(width: Spacing.md),
-              Expanded(
-                child: _buildRevenueStatCard(
-                  Icons.check_circle,
-                  'Volné stoly',
-                  '${tablesVM.freeTables.length}',
-                  AppColors.success,
-                ),
-              ),
+              _buildRevenueStatCard(Icons.table_bar_rounded, 'Aktivní stoly', '${tablesVM.activeTables.length}', AppColors.primary),
+              _buildRevenueStatCard(Icons.receipt_long_rounded, 'Otevřené tržby', CurrencyFormatter.format(tablesVM.openTabsTotal), AppColors.warning),
+              _buildRevenueStatCard(Icons.check_circle_rounded, 'Volné stoly', '${tablesVM.freeTables.length}', AppColors.success),
             ],
           ),
           const SizedBox(height: Spacing.xl),
