@@ -15,6 +15,7 @@ import '../utils/currency_formatter.dart';
 import '../services/printer_service.dart';
 import '../viewmodels/theme_viewmodel.dart';
 import 'admin_login_screen.dart';
+import 'admin_widgets.dart';
 import 'admin_section_profit.dart';
 import 'admin_section_receipts.dart';
 import 'admin_section_cash.dart';
@@ -449,7 +450,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
         child: Text(
           label,
           style: TextStyle(
-            color: isActive ? AppColors.textPrimary : AppColors.textSecondary,
+            color: isActive ? AT.ink1 : AT.ink2,
             fontSize: 13,
             fontWeight: isActive ? FontWeight.w600 : FontWeight.w400,
           ),
@@ -538,17 +539,17 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     final chartMaxY = maxY == 0 ? 100.0 : maxY * 1.2;
 
     return Container(
-      padding: const EdgeInsets.all(Spacing.md),
+      padding: const EdgeInsets.all(AT.rowPadH),
       decoration: BoxDecoration(
-        color: AppColors.cardBackground,
+        color: AT.white,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 8, offset: const Offset(0, 2))],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Přehled tržeb', style: AppTypography.labelLarge.copyWith(color: AppColors.textPrimary)),
-          const SizedBox(height: Spacing.lg),
+          Text('Přehled tržeb', style: AT.cardTitle),
+          const SizedBox(height: AT.pagePad),
           SizedBox(
             height: 220,
             child: entries.length <= 1
@@ -560,8 +561,8 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                           entries.isNotEmpty ? CurrencyFormatter.format(entries.first.value) : '0 Kč',
                           style: AppTypography.h2.copyWith(color: AppColors.primary),
                         ),
-                        const SizedBox(height: Spacing.xs),
-                        Text('Celkové tržby dnes', style: AppTypography.bodySmall.copyWith(color: AppColors.textTertiary)),
+                        const SizedBox(height: 6),
+                        Text('Celkové tržby dnes', style: AppTypography.bodySmall.copyWith(color: AT.ink3)),
                       ],
                     ),
                   )
@@ -591,7 +592,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                                 padding: const EdgeInsets.only(right: 8),
                                 child: Text(
                                   CurrencyFormatter.format(value),
-                                  style: AppTypography.caption.copyWith(color: AppColors.textTertiary, fontSize: 10),
+                                  style: AppTypography.caption.copyWith(color: AT.ink3, fontSize: 10),
                                   textAlign: TextAlign.right,
                                 ),
                               );
@@ -610,7 +611,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                                 padding: const EdgeInsets.only(top: 8),
                                 child: Text(
                                   entries[idx].key,
-                                  style: AppTypography.caption.copyWith(color: AppColors.textTertiary, fontSize: 10),
+                                  style: AppTypography.caption.copyWith(color: AT.ink3, fontSize: 10),
                                 ),
                               );
                             },
@@ -639,7 +640,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                                 radius: 4,
                                 color: AppColors.primary,
                                 strokeWidth: 2,
-                                strokeColor: AppColors.cardBackground,
+                                strokeColor: AT.white,
                               );
                             },
                           ),
@@ -651,14 +652,14 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                       ],
                       lineTouchData: LineTouchData(
                         touchTooltipData: LineTouchTooltipData(
-                          getTooltipColor: (_) => AppColors.backgroundTertiary,
+                          getTooltipColor: (_) => AT.bgWarm,
                           getTooltipItems: (touchedSpots) {
                             return touchedSpots.map((spot) {
                               final idx = spot.x.toInt();
                               final label = idx >= 0 && idx < entries.length ? entries[idx].key : '';
                               return LineTooltipItem(
                                 '$label\n${CurrencyFormatter.format(spot.y)}',
-                                AppTypography.caption.copyWith(color: AppColors.textPrimary),
+                                AppTypography.caption.copyWith(color: AT.ink1),
                               );
                             }).toList();
                           },
@@ -683,7 +684,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
 
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.cardBackground,
+        color: AT.white,
         borderRadius: BorderRadius.circular(16),
         boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 8, offset: const Offset(0, 2))],
       ),
@@ -691,30 +692,30 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Padding(
-            padding: const EdgeInsets.all(Spacing.md),
-            child: Text('Tržby dle typu plateb', style: AppTypography.labelLarge.copyWith(color: AppColors.textPrimary)),
+            padding: const EdgeInsets.all(AT.rowPadH),
+            child: Text('Tržby dle typu plateb', style: AT.cardTitle),
           ),
           Divider(color: AppColors.divider, height: 1),
           // Table header
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: Spacing.md, vertical: Spacing.sm),
+            padding: const EdgeInsets.symmetric(horizontal: AT.rowPadH, vertical: AT.rowPadV),
             child: Row(
               children: [
                 Expanded(
                   flex: 3,
-                  child: Text('Typ platby', style: AppTypography.caption.copyWith(color: AppColors.textTertiary, fontWeight: FontWeight.w600)),
+                  child: Text('Typ platby', style: AppTypography.caption.copyWith(color: AT.ink3, fontWeight: FontWeight.w600)),
                 ),
                 Expanded(
                   flex: 2,
-                  child: Text('Příjmy', style: AppTypography.caption.copyWith(color: AppColors.textTertiary, fontWeight: FontWeight.w600), textAlign: TextAlign.right),
+                  child: Text('Příjmy', style: AppTypography.caption.copyWith(color: AT.ink3, fontWeight: FontWeight.w600), textAlign: TextAlign.right),
                 ),
                 Expanded(
                   flex: 3,
-                  child: Text('Průměrná útrata na hlavu', style: AppTypography.caption.copyWith(color: AppColors.textTertiary, fontWeight: FontWeight.w600), textAlign: TextAlign.right),
+                  child: Text('Průměrná útrata na hlavu', style: AppTypography.caption.copyWith(color: AT.ink3, fontWeight: FontWeight.w600), textAlign: TextAlign.right),
                 ),
                 Expanded(
                   flex: 2,
-                  child: Text('Počet osob', style: AppTypography.caption.copyWith(color: AppColors.textTertiary, fontWeight: FontWeight.w600), textAlign: TextAlign.right),
+                  child: Text('Počet osob', style: AppTypography.caption.copyWith(color: AT.ink3, fontWeight: FontWeight.w600), textAlign: TextAlign.right),
                 ),
               ],
             ),
@@ -722,13 +723,13 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
           Divider(color: AppColors.divider, height: 1),
           if (payments.isEmpty)
             Padding(
-              padding: const EdgeInsets.all(Spacing.xl),
+              padding: const EdgeInsets.all(28),
               child: Center(
                 child: Column(
                   children: [
-                    Icon(Icons.sentiment_dissatisfied, color: AppColors.textTertiary, size: 32),
-                    const SizedBox(height: Spacing.sm),
-                    Text('Žádné položky nenalezeny', style: AppTypography.bodyMedium.copyWith(color: AppColors.textTertiary)),
+                    Icon(Icons.sentiment_dissatisfied, color: AT.ink3, size: 32),
+                    const SizedBox(height: 8),
+                    Text('Žádné položky nenalezeny', style: AT.rowSub.copyWith(color: AT.ink3)),
                   ],
                 ),
               ),
@@ -741,18 +742,18 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
             Divider(color: AppColors.divider, height: 1),
             // Total row
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: Spacing.md, vertical: Spacing.sm),
+              padding: const EdgeInsets.symmetric(horizontal: AT.rowPadH, vertical: AT.rowPadV),
               child: Row(
                 children: [
                   Expanded(
                     flex: 3,
-                    child: Text('Celkem', style: AppTypography.labelMedium.copyWith(color: AppColors.textPrimary, fontWeight: FontWeight.bold)),
+                    child: Text('Celkem', style: AT.rowTitle.copyWith(fontWeight: FontWeight.w700)),
                   ),
                   Expanded(
                     flex: 2,
                     child: Text(
                       CurrencyFormatter.format(cardTotal + cashTotal),
-                      style: AppTypography.labelMedium.copyWith(color: AppColors.textPrimary, fontWeight: FontWeight.bold),
+                      style: AT.rowTitle.copyWith(fontWeight: FontWeight.w700),
                       textAlign: TextAlign.right,
                     ),
                   ),
@@ -760,7 +761,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                     flex: 3,
                     child: Text(
                       CurrencyFormatter.format(payments.isNotEmpty ? (cardTotal + cashTotal) / payments.length : 0),
-                      style: AppTypography.labelMedium.copyWith(color: AppColors.textPrimary, fontWeight: FontWeight.bold),
+                      style: AT.rowTitle.copyWith(fontWeight: FontWeight.w700),
                       textAlign: TextAlign.right,
                     ),
                   ),
@@ -768,7 +769,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                     flex: 2,
                     child: Text(
                       '${payments.length}',
-                      style: AppTypography.labelMedium.copyWith(color: AppColors.textPrimary, fontWeight: FontWeight.bold),
+                      style: AT.rowTitle.copyWith(fontWeight: FontWeight.w700),
                       textAlign: TextAlign.right,
                     ),
                   ),
@@ -776,7 +777,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
               ),
             ),
           ],
-          const SizedBox(height: Spacing.xs),
+          const SizedBox(height: 6),
         ],
       ),
     );
@@ -784,30 +785,30 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
 
   Widget _buildBreakdownRow(IconData icon, String label, double total, double avg, int count) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: Spacing.md, vertical: Spacing.sm),
+      padding: const EdgeInsets.symmetric(horizontal: AT.rowPadH, vertical: AT.rowPadV),
       child: Row(
         children: [
           Expanded(
             flex: 3,
             child: Row(
               children: [
-                Icon(icon, color: AppColors.textSecondary, size: 18),
-                const SizedBox(width: Spacing.xs),
-                Text(label, style: AppTypography.bodyMedium.copyWith(color: AppColors.textPrimary)),
+                Icon(icon, color: AT.ink2, size: 18),
+                const SizedBox(width: 6),
+                Text(label, style: AT.rowTitle.copyWith(fontWeight: FontWeight.w400)),
               ],
             ),
           ),
           Expanded(
             flex: 2,
-            child: Text(CurrencyFormatter.format(total), style: AppTypography.bodyMedium.copyWith(color: AppColors.textPrimary), textAlign: TextAlign.right),
+            child: Text(CurrencyFormatter.format(total), style: AT.rowTitle.copyWith(fontWeight: FontWeight.w400), textAlign: TextAlign.right),
           ),
           Expanded(
             flex: 3,
-            child: Text(CurrencyFormatter.format(avg), style: AppTypography.bodyMedium.copyWith(color: AppColors.textPrimary), textAlign: TextAlign.right),
+            child: Text(CurrencyFormatter.format(avg), style: AT.rowTitle.copyWith(fontWeight: FontWeight.w400), textAlign: TextAlign.right),
           ),
           Expanded(
             flex: 2,
-            child: Text('$count', style: AppTypography.bodyMedium.copyWith(color: AppColors.textPrimary), textAlign: TextAlign.right),
+            child: Text('$count', style: AT.rowTitle.copyWith(fontWeight: FontWeight.w400), textAlign: TextAlign.right),
           ),
         ],
       ),
@@ -838,27 +839,27 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
               _buildRevenueStatCard(Icons.check_circle_rounded, 'Volné stoly', '${tablesVM.freeTables.length}', AppColors.success),
             ],
           ),
-          const SizedBox(height: Spacing.xl),
-          Text('Aktivní stoly', style: AppTypography.labelLarge.copyWith(color: AppColors.textPrimary)),
-          const SizedBox(height: Spacing.md),
+          const SizedBox(height: 28),
+          Text('Aktivní stoly', style: AT.cardTitle),
+          const SizedBox(height: AT.rowPadH),
           if (tablesVM.activeTables.isEmpty)
             Container(
-              padding: const EdgeInsets.all(Spacing.xl),
+              padding: const EdgeInsets.all(28),
               decoration: BoxDecoration(
-                color: AppColors.cardBackground,
+                color: AT.white,
                 borderRadius: BorderRadius.circular(16),
                 boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 8, offset: const Offset(0, 2))],
               ),
               child: Center(
-                child: Text('Žádné aktivní stoly', style: AppTypography.bodyMedium.copyWith(color: AppColors.textTertiary)),
+                child: Text('Žádné aktivní stoly', style: AT.rowSub.copyWith(color: AT.ink3)),
               ),
             )
           else
             ...tablesVM.activeTables.map((table) => Container(
               margin: const EdgeInsets.only(bottom: Spacing.sm),
-              padding: const EdgeInsets.all(Spacing.md),
+              padding: const EdgeInsets.all(AT.rowPadH),
               decoration: BoxDecoration(
-                color: AppColors.cardBackground,
+                color: AT.white,
                 borderRadius: BorderRadius.circular(16),
                 boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 8, offset: const Offset(0, 2))],
               ),
@@ -875,22 +876,22 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                       child: Text('${table.number}', style: AppTypography.labelLarge.copyWith(color: AppColors.primary)),
                     ),
                   ),
-                  const SizedBox(width: Spacing.md),
+                  const SizedBox(width: AT.cardGap),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('Stůl ${table.number}', style: AppTypography.labelMedium.copyWith(color: AppColors.textPrimary)),
+                        Text('Stůl ${table.number}', style: AT.rowTitle),
                         Text(
                           '${table.currentOrder?.items.length ?? 0} položek',
-                          style: AppTypography.caption.copyWith(color: AppColors.textSecondary),
+                          style: AT.sectionLabel,
                         ),
                       ],
                     ),
                   ),
                   Text(
                     CurrencyFormatter.format(table.displayAmount),
-                    style: AppTypography.monoLarge.copyWith(color: AppColors.primary),
+                    style: AT.mono.copyWith(color: AT.indigo),
                   ),
                 ],
               ),
@@ -924,33 +925,33 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
             padding: const EdgeInsets.fromLTRB(24, 20, 24, 24),
             children: productsVM.categories.map((cat) => Container(
                 margin: const EdgeInsets.only(bottom: Spacing.sm),
-                padding: const EdgeInsets.all(Spacing.md),
+                padding: const EdgeInsets.all(AT.rowPadH),
                 decoration: BoxDecoration(
-                  color: AppColors.cardBackground,
+                  color: AT.white,
                   borderRadius: BorderRadius.circular(16),
                   boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 8, offset: const Offset(0, 2))],
                 ),
                 child: Row(
                   children: [
                     Text(cat.emoji, style: const TextStyle(fontSize: 32)),
-                    const SizedBox(width: Spacing.md),
+                    const SizedBox(width: AT.cardGap),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(cat.title, style: AppTypography.labelLarge.copyWith(color: AppColors.textPrimary)),
+                          Text(cat.title, style: AT.cardTitle),
                           Text(
                             '${productsVM.getProductsByCategory(cat.id).length} produktů',
-                            style: AppTypography.caption.copyWith(color: AppColors.textSecondary),
+                            style: AT.sectionLabel,
                           ),
                         ],
                       ),
                     ),
                     Text(
                       'ID: ${cat.id}',
-                      style: AppTypography.caption.copyWith(color: AppColors.textTertiary),
+                      style: AT.sectionLabel,
                     ),
-                    const SizedBox(width: Spacing.md),
+                    const SizedBox(width: AT.cardGap),
                     IconButton(
                       onPressed: () => _showDeleteCategoryDialog(productsVM, cat),
                       icon: const Icon(Icons.delete_outline, color: AppColors.error, size: 20),
@@ -1000,7 +1001,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                     margin: const EdgeInsets.only(right: 8),
                     padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
                     decoration: BoxDecoration(
-                      color: isSelected ? AppColors.primary : AppColors.cardBackground,
+                      color: isSelected ? AppColors.primary : AT.white,
                       borderRadius: BorderRadius.circular(8),
                       border: Border.all(
                         color: isSelected ? AppColors.primary : AppColors.border,
@@ -1011,7 +1012,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                       style: TextStyle(
                         fontSize: 13,
                         fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
-                        color: isSelected ? Colors.white : AppColors.textPrimary,
+                        color: isSelected ? Colors.white : AT.ink1,
                       ),
                     ),
                   ),
@@ -1042,7 +1043,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                       padding: const EdgeInsets.only(top: Spacing.xxl),
                       child: Text(
                         categories.isEmpty ? 'Nejprve vytvořte kategorii' : 'Žádné produkty v této kategorii',
-                        style: AppTypography.bodyMedium.copyWith(color: AppColors.textTertiary),
+                        style: AT.rowSub.copyWith(color: AT.ink3),
                       ),
                     ),
                   )
@@ -1051,25 +1052,25 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                       onTap: () => _showProductFormDialog(productsVM, existingProduct: product),
                       child: Container(
                         margin: const EdgeInsets.only(bottom: Spacing.xs),
-                        padding: const EdgeInsets.symmetric(horizontal: Spacing.md, vertical: Spacing.sm),
+                        padding: const EdgeInsets.symmetric(horizontal: AT.rowPadH, vertical: AT.rowPadV),
                         decoration: BoxDecoration(
-                          color: AppColors.cardBackground,
+                          color: AT.white,
                           borderRadius: BorderRadius.circular(12),
                           boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 6, offset: const Offset(0, 1))],
                         ),
                         child: Row(
                           children: [
                             Text(product.emoji, style: const TextStyle(fontSize: 24)),
-                            const SizedBox(width: Spacing.md),
+                            const SizedBox(width: AT.cardGap),
                             Expanded(
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text(product.name, style: AppTypography.bodyMedium.copyWith(color: AppColors.textPrimary)),
+                                  Text(product.name, style: AT.rowTitle.copyWith(fontWeight: FontWeight.w400)),
                                   if (product.description.isNotEmpty)
                                     Text(
                                       product.description,
-                                      style: AppTypography.caption.copyWith(color: AppColors.textTertiary),
+                                      style: AT.sectionLabel,
                                       maxLines: 1,
                                       overflow: TextOverflow.ellipsis,
                                     ),
@@ -1079,22 +1080,22 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                             Container(
                               padding: const EdgeInsets.symmetric(horizontal: Spacing.sm, vertical: Spacing.xxs),
                               decoration: BoxDecoration(
-                                color: AppColors.backgroundTertiary,
+                                color: AT.bgWarm,
                                 borderRadius: BorderRadius.circular(CornerRadius.sm),
                               ),
                               child: Text(
                                 CurrencyFormatter.format(product.price),
-                                style: AppTypography.monoMedium.copyWith(color: AppColors.primary),
+                                style: AT.mono.copyWith(fontSize: 13, color: AT.indigo),
                               ),
                             ),
                             if (!product.isAvailable)
                               Padding(
                                 padding: const EdgeInsets.only(left: Spacing.xs),
-                                child: Icon(Icons.visibility_off, color: AppColors.textTertiary, size: 18),
+                                child: Icon(Icons.visibility_off, color: AT.ink3, size: 18),
                               ),
-                            const SizedBox(width: Spacing.sm),
-                            Icon(Icons.edit_outlined, color: AppColors.textSecondary, size: 18),
-                            const SizedBox(width: Spacing.xs),
+                            const SizedBox(width: 8),
+                            Icon(Icons.edit_outlined, color: AT.ink2, size: 18),
+                            const SizedBox(width: 6),
                             IconButton(
                               onPressed: () => productsVM.deleteProduct(product.id),
                               icon: const Icon(Icons.delete_outline, color: AppColors.error, size: 20),
@@ -1128,9 +1129,9 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                   padding: const EdgeInsets.fromLTRB(24, 20, 24, 24),
                   children: payments.reversed.map((payment) => Container(
                       margin: const EdgeInsets.only(bottom: Spacing.sm),
-                      padding: const EdgeInsets.all(Spacing.md),
+                      padding: const EdgeInsets.all(AT.rowPadH),
                       decoration: BoxDecoration(
-                        color: AppColors.cardBackground,
+                        color: AT.white,
                         borderRadius: BorderRadius.circular(16),
                         boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 8, offset: const Offset(0, 2))],
                       ),
@@ -1138,21 +1139,21 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                         children: [
                           Icon(
                             payment.method == PaymentMethod.card ? Icons.credit_card : Icons.payments,
-                            color: AppColors.textSecondary,
+                            color: AT.ink2,
                             size: 24,
                           ),
-                          const SizedBox(width: Spacing.md),
+                          const SizedBox(width: AT.cardGap),
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
                                   'Stůl ${payment.tableNumber}',
-                                  style: AppTypography.labelMedium.copyWith(color: AppColors.textPrimary),
+                                  style: AT.rowTitle,
                                 ),
                                 Text(
                                   '${payment.timestamp.hour}:${payment.timestamp.minute.toString().padLeft(2, '0')} - ${payment.method.title}',
-                                  style: AppTypography.caption.copyWith(color: AppColors.textSecondary),
+                                  style: AT.sectionLabel,
                                 ),
                               ],
                             ),
@@ -1162,7 +1163,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                             children: [
                               Text(
                                 CurrencyFormatter.format(payment.amount),
-                                style: AppTypography.monoLarge.copyWith(color: AppColors.textPrimary),
+                                style: AT.mono,
                               ),
                               if (payment.tip > 0)
                                 Text(
@@ -1205,9 +1206,9 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                       final role = auth.getRoleById(member.roleId);
                       return Container(
                         margin: const EdgeInsets.only(bottom: Spacing.sm),
-                        padding: const EdgeInsets.all(Spacing.md),
+                        padding: const EdgeInsets.all(AT.rowPadH),
                         decoration: BoxDecoration(
-                          color: AppColors.cardBackground,
+                          color: AT.white,
                           borderRadius: BorderRadius.circular(16),
                           boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 8, offset: const Offset(0, 2))],
                         ),
@@ -1219,38 +1220,38 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                               decoration: BoxDecoration(
                                 color: member.isActive
                                     ? AppColors.primary.withValues(alpha: 0.15)
-                                    : AppColors.backgroundTertiary,
+                                    : AT.bgWarm,
                                 borderRadius: BorderRadius.circular(22),
                               ),
                               child: Center(
                                 child: Text(
                                   member.name.isNotEmpty ? member.name[0].toUpperCase() : '?',
                                   style: TextStyle(
-                                    color: member.isActive ? AppColors.primary : AppColors.textTertiary,
+                                    color: member.isActive ? AppColors.primary : AT.ink3,
                                     fontSize: 18,
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
                               ),
                             ),
-                            const SizedBox(width: Spacing.md),
+                            const SizedBox(width: AT.cardGap),
                             Expanded(
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Row(
                                     children: [
-                                      Text(member.name, style: AppTypography.labelLarge.copyWith(color: AppColors.textPrimary)),
+                                      Text(member.name, style: AT.cardTitle),
                                       if (!member.isActive)
                                         Padding(
                                           padding: const EdgeInsets.only(left: 8),
-                                          child: Text('(neaktivní)', style: AppTypography.caption.copyWith(color: AppColors.textTertiary)),
+                                          child: Text('(neaktivní)', style: AT.sectionLabel),
                                         ),
                                     ],
                                   ),
                                   Text(
                                     role?.name ?? 'Bez role',
-                                    style: AppTypography.caption.copyWith(color: AppColors.textSecondary),
+                                    style: AT.sectionLabel,
                                   ),
                                 ],
                               ),
@@ -1264,10 +1265,10 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                                 ),
                                 child: Text('Admin', style: AppTypography.caption.copyWith(color: AppColors.info)),
                               ),
-                            const SizedBox(width: Spacing.sm),
+                            const SizedBox(width: 8),
                             IconButton(
                               onPressed: () => _showEditStaffDialog(auth, member),
-                              icon: Icon(Icons.edit_outlined, color: AppColors.textSecondary, size: 20),
+                              icon: Icon(Icons.edit_outlined, color: AT.ink2, size: 20),
                             ),
                             IconButton(
                               onPressed: () => _showDeleteStaffDialog(auth, member),
@@ -1308,9 +1309,9 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                       final memberCount = auth.staff.where((s) => s.roleId == role.id).length;
                       return Container(
                         margin: const EdgeInsets.only(bottom: Spacing.sm),
-                        padding: const EdgeInsets.all(Spacing.md),
+                        padding: const EdgeInsets.all(AT.rowPadH),
                         decoration: BoxDecoration(
-                          color: AppColors.cardBackground,
+                          color: AT.white,
                           borderRadius: BorderRadius.circular(16),
                           boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 8, offset: const Offset(0, 2))],
                         ),
@@ -1319,15 +1320,15 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                           children: [
                             Row(
                               children: [
-                                Icon(Icons.security, color: role.isDefault ? AppColors.primary : AppColors.textSecondary, size: 24),
-                                const SizedBox(width: Spacing.sm),
+                                Icon(Icons.security, color: role.isDefault ? AppColors.primary : AT.ink2, size: 24),
+                                const SizedBox(width: 8),
                                 Expanded(
                                   child: Column(
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
                                       Row(
                                         children: [
-                                          Text(role.name, style: AppTypography.labelLarge.copyWith(color: AppColors.textPrimary)),
+                                          Text(role.name, style: AT.cardTitle),
                                           if (role.isDefault)
                                             Padding(
                                               padding: const EdgeInsets.only(left: 8),
@@ -1344,14 +1345,14 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                                       ),
                                       Text(
                                         '$memberCount členů',
-                                        style: AppTypography.caption.copyWith(color: AppColors.textSecondary),
+                                        style: AT.sectionLabel,
                                       ),
                                     ],
                                   ),
                                 ),
                                 IconButton(
                                   onPressed: () => _showEditRoleDialog(auth, role),
-                                  icon: Icon(Icons.edit_outlined, color: AppColors.textSecondary, size: 20),
+                                  icon: Icon(Icons.edit_outlined, color: AT.ink2, size: 20),
                                 ),
                                 if (!role.isDefault)
                                   IconButton(
@@ -1362,13 +1363,13 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                                         : null,
                                     icon: Icon(
                                       Icons.delete_outline,
-                                      color: memberCount == 0 ? AppColors.error : AppColors.textTertiary,
+                                      color: memberCount == 0 ? AppColors.error : AT.ink3,
                                       size: 20,
                                     ),
                                   ),
                               ],
                             ),
-                            const SizedBox(height: Spacing.sm),
+                            const SizedBox(height: 8),
                             Wrap(
                               spacing: 6,
                               runSpacing: 4,
@@ -1377,10 +1378,10 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                                 return Container(
                                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                                   decoration: BoxDecoration(
-                                    color: AppColors.backgroundTertiary,
+                                    color: AT.bgWarm,
                                     borderRadius: BorderRadius.circular(4),
                                   ),
-                                  child: Text(label, style: AppTypography.caption.copyWith(color: AppColors.textSecondary)),
+                                  child: Text(label, style: AT.sectionLabel),
                                 );
                               }).toList(),
                             ),
@@ -1412,9 +1413,9 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
 
           // Connection status card
           Container(
-            padding: const EdgeInsets.all(Spacing.md),
+            padding: const EdgeInsets.all(AT.rowPadH),
             decoration: BoxDecoration(
-              color: AppColors.cardBackground,
+              color: AT.white,
               borderRadius: BorderRadius.circular(16),
               boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 8, offset: const Offset(0, 2))],
             ),
@@ -1428,19 +1429,19 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                     color: printer.isConnected ? AppColors.success : AppColors.error,
                   ),
                 ),
-                const SizedBox(width: Spacing.md),
+                const SizedBox(width: AT.cardGap),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
                         printer.isConnected ? 'Připojeno' : 'Nepřipojeno',
-                        style: AppTypography.labelLarge.copyWith(color: AppColors.textPrimary),
+                        style: AT.cardTitle,
                       ),
                       if (printer.connectedDevice != null)
                         Text(
                           printer.connectedDevice!.name ?? printer.connectedDevice!.address ?? '',
-                          style: AppTypography.caption.copyWith(color: AppColors.textSecondary),
+                          style: AT.sectionLabel,
                         ),
                     ],
                   ),
@@ -1453,7 +1454,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                     ),
                     child: const Text('Testovací tisk'),
                   ),
-                  const SizedBox(width: Spacing.sm),
+                  const SizedBox(width: 8),
                   ElevatedButton(
                     onPressed: () => printer.disconnect(),
                     style: ElevatedButton.styleFrom(
@@ -1465,7 +1466,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
               ],
             ),
           ),
-          const SizedBox(height: Spacing.xl),
+          const SizedBox(height: 28),
 
           // Search button
           if (!printer.isConnected)
@@ -1476,19 +1477,19 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
             ),
 
           if (!printer.isConnected) ...[
-            const SizedBox(height: Spacing.xl),
+            const SizedBox(height: 28),
             Container(
-              padding: const EdgeInsets.all(Spacing.lg),
+              padding: const EdgeInsets.all(AT.pagePad),
               decoration: BoxDecoration(
-                color: AppColors.cardBackground,
+                color: AT.white,
                 borderRadius: BorderRadius.circular(16),
                 boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 8, offset: const Offset(0, 2))],
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Jak připojit tiskárnu', style: AppTypography.labelLarge.copyWith(color: AppColors.textPrimary)),
-                  const SizedBox(height: Spacing.md),
+                  Text('Jak připojit tiskárnu', style: AT.cardTitle),
+                  const SizedBox(height: AT.rowPadH),
                   _buildInstructionStep('1', 'Zapněte tiskárnu Xprinter XP-C260H'),
                   _buildInstructionStep('2', 'V nastavení tabletu spárujte tiskárnu přes Bluetooth'),
                   _buildInstructionStep('3', 'Klikněte na "Vyhledat tiskárny" výše'),
@@ -1521,9 +1522,9 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
               child: Text(number, style: AppTypography.labelMedium.copyWith(color: AppColors.primary)),
             ),
           ),
-          const SizedBox(width: Spacing.sm),
+          const SizedBox(width: 8),
           Expanded(
-            child: Text(text, style: AppTypography.bodyMedium.copyWith(color: AppColors.textSecondary)),
+            child: Text(text, style: AT.rowSub),
           ),
         ],
       ),
@@ -1535,8 +1536,8 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
       context: context,
       barrierDismissible: false,
       builder: (context) => AlertDialog(
-        backgroundColor: AppColors.cardBackground,
-        title: Text('Hledám tiskárny...', style: AppTypography.h3.copyWith(color: AppColors.textPrimary)),
+        backgroundColor: AT.white,
+        title: Text('Hledám tiskárny...', style: AT.cardTitle.copyWith(fontSize: 17)),
         content: const SizedBox(
           height: 60,
           child: Center(child: CircularProgressIndicator(color: AppColors.primary)),
@@ -1553,11 +1554,11 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
       showDialog(
         context: context,
         builder: (context) => AlertDialog(
-          backgroundColor: AppColors.cardBackground,
-          title: Text('Žádné zařízení', style: AppTypography.h3.copyWith(color: AppColors.textPrimary)),
+          backgroundColor: AT.white,
+          title: Text('Žádné zařízení', style: AT.cardTitle.copyWith(fontSize: 17)),
           content: Text(
             'Nejprve spárujte tiskárnu v nastavení Bluetooth vašeho tabletu.',
-            style: AppTypography.bodyMedium.copyWith(color: AppColors.textSecondary),
+            style: AT.rowSub,
           ),
           actions: [
             TextButton(
@@ -1573,8 +1574,8 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     showDialog(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        backgroundColor: AppColors.cardBackground,
-        title: Text('Spárovaná zařízení', style: AppTypography.h3.copyWith(color: AppColors.textPrimary)),
+        backgroundColor: AT.white,
+        title: Text('Spárovaná zařízení', style: AT.cardTitle.copyWith(fontSize: 17)),
         content: SizedBox(
           width: 400,
           child: Column(
@@ -1587,8 +1588,8 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                   context: context,
                   barrierDismissible: false,
                   builder: (context) => AlertDialog(
-                    backgroundColor: AppColors.cardBackground,
-                    title: Text('Připojuji...', style: AppTypography.h3.copyWith(color: AppColors.textPrimary)),
+                    backgroundColor: AT.white,
+                    title: Text('Připojuji...', style: AT.cardTitle.copyWith(fontSize: 17)),
                     content: SizedBox(
                       height: 60,
                       child: Center(
@@ -1596,8 +1597,8 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             const CircularProgressIndicator(color: AppColors.primary),
-                            const SizedBox(height: Spacing.sm),
-                            Text(device.name ?? device.address ?? '', style: AppTypography.caption.copyWith(color: AppColors.textSecondary)),
+                            const SizedBox(height: 8),
+                            Text(device.name ?? device.address ?? '', style: AT.sectionLabel),
                           ],
                         ),
                       ),
@@ -1621,31 +1622,31 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
               },
               child: Container(
                 margin: const EdgeInsets.only(bottom: Spacing.xs),
-                padding: const EdgeInsets.all(Spacing.md),
+                padding: const EdgeInsets.all(AT.rowPadH),
                 decoration: BoxDecoration(
-                  color: AppColors.backgroundTertiary,
+                  color: AT.bgWarm,
                   borderRadius: BorderRadius.circular(CornerRadius.sm),
                 ),
                 child: Row(
                   children: [
                     const Icon(Icons.bluetooth, color: AppColors.info, size: 24),
-                    const SizedBox(width: Spacing.md),
+                    const SizedBox(width: AT.cardGap),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
                             device.name ?? 'Neznámé zařízení',
-                            style: AppTypography.labelMedium.copyWith(color: AppColors.textPrimary),
+                            style: AT.rowTitle,
                           ),
                           Text(
                             device.address ?? '',
-                            style: AppTypography.caption.copyWith(color: AppColors.textTertiary),
+                            style: AT.sectionLabel,
                           ),
                         ],
                       ),
                     ),
-                    Icon(Icons.chevron_right, color: AppColors.textTertiary),
+                    Icon(Icons.chevron_right, color: AT.ink3),
                   ],
                 ),
               ),
@@ -1655,7 +1656,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext),
-            child: Text('Zrušit', style: AppTypography.labelLarge.copyWith(color: AppColors.textSecondary)),
+            child: Text('Zrušit', style: AppTypography.labelLarge.copyWith(color: AT.ink2)),
           ),
         ],
       ),
@@ -1677,38 +1678,38 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
       context: context,
       builder: (dialogContext) => StatefulBuilder(
         builder: (dialogContext, setDialogState) => AlertDialog(
-          backgroundColor: AppColors.cardBackground,
-          title: Text('Nový člen', style: AppTypography.h3.copyWith(color: AppColors.textPrimary)),
+          backgroundColor: AT.white,
+          title: Text('Nový člen', style: AT.cardTitle.copyWith(fontSize: 17)),
           content: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
                 TextField(
                   controller: nameController,
-                  style: AppTypography.bodyLarge.copyWith(color: AppColors.textPrimary),
+                  style: AppTypography.bodyLarge.copyWith(color: AT.ink1),
                   decoration: const InputDecoration(hintText: 'Jméno'),
                 ),
-                const SizedBox(height: Spacing.md),
+                const SizedBox(height: AT.rowPadH),
                 TextField(
                   controller: pinController,
                   keyboardType: TextInputType.number,
                   maxLength: 4,
-                  style: AppTypography.bodyLarge.copyWith(color: AppColors.textPrimary),
+                  style: AppTypography.bodyLarge.copyWith(color: AT.ink1),
                   decoration: const InputDecoration(hintText: 'PIN (4 číslice)', counterText: ''),
                 ),
-                const SizedBox(height: Spacing.md),
+                const SizedBox(height: AT.rowPadH),
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: Spacing.md),
                   decoration: BoxDecoration(
-                    color: AppColors.backgroundTertiary,
+                    color: AT.bgWarm,
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: DropdownButton<String>(
                     value: selectedRoleId,
                     isExpanded: true,
-                    dropdownColor: AppColors.cardBackground,
+                    dropdownColor: AT.white,
                     underline: const SizedBox(),
-                    style: AppTypography.bodyLarge.copyWith(color: AppColors.textPrimary),
+                    style: AppTypography.bodyLarge.copyWith(color: AT.ink1),
                     items: auth.roles.map((role) => DropdownMenuItem(
                       value: role.id,
                       child: Text(role.name),
@@ -1718,10 +1719,10 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                     },
                   ),
                 ),
-                const SizedBox(height: Spacing.lg),
+                const SizedBox(height: AT.pagePad),
                 Row(
                   children: [
-                    Text('Admin přístup', style: AppTypography.labelSmall.copyWith(color: AppColors.textTertiary)),
+                    Text('Admin přístup', style: AppTypography.labelSmall.copyWith(color: AT.ink3)),
                     const Spacer(),
                     Switch(
                       value: addAdminAccess,
@@ -1731,17 +1732,17 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                   ],
                 ),
                 if (addAdminAccess) ...[
-                  const SizedBox(height: Spacing.sm),
+                  const SizedBox(height: 8),
                   TextField(
                     controller: emailController,
                     keyboardType: TextInputType.emailAddress,
-                    style: AppTypography.bodyLarge.copyWith(color: AppColors.textPrimary),
+                    style: AppTypography.bodyLarge.copyWith(color: AT.ink1),
                     decoration: const InputDecoration(hintText: 'E-mail'),
                   ),
-                  const SizedBox(height: Spacing.xs),
+                  const SizedBox(height: 6),
                   Text(
                     'Na e-mail bude odeslán odkaz pro nastavení hesla',
-                    style: AppTypography.caption.copyWith(color: AppColors.textTertiary),
+                    style: AT.sectionLabel,
                   ),
                 ],
                 if (adminError != null)
@@ -1755,7 +1756,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(dialogContext),
-              child: Text('Zrušit', style: AppTypography.labelLarge.copyWith(color: AppColors.textSecondary)),
+              child: Text('Zrušit', style: AppTypography.labelLarge.copyWith(color: AT.ink2)),
             ),
             TextButton(
               onPressed: isRegistering ? null : () async {
@@ -1841,38 +1842,38 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
       context: context,
       builder: (dialogContext) => StatefulBuilder(
         builder: (dialogContext, setDialogState) => AlertDialog(
-          backgroundColor: AppColors.cardBackground,
-          title: Text('Upravit člena', style: AppTypography.h3.copyWith(color: AppColors.textPrimary)),
+          backgroundColor: AT.white,
+          title: Text('Upravit člena', style: AT.cardTitle.copyWith(fontSize: 17)),
           content: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
                 TextField(
                   controller: nameController,
-                  style: AppTypography.bodyLarge.copyWith(color: AppColors.textPrimary),
+                  style: AppTypography.bodyLarge.copyWith(color: AT.ink1),
                   decoration: const InputDecoration(hintText: 'Jméno'),
                 ),
-                const SizedBox(height: Spacing.md),
+                const SizedBox(height: AT.rowPadH),
                 TextField(
                   controller: pinController,
                   keyboardType: TextInputType.number,
                   maxLength: 4,
-                  style: AppTypography.bodyLarge.copyWith(color: AppColors.textPrimary),
+                  style: AppTypography.bodyLarge.copyWith(color: AT.ink1),
                   decoration: const InputDecoration(hintText: 'Nový PIN (prázdné = beze změny)', counterText: ''),
                 ),
-                const SizedBox(height: Spacing.md),
+                const SizedBox(height: AT.rowPadH),
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: Spacing.md),
                   decoration: BoxDecoration(
-                    color: AppColors.backgroundTertiary,
+                    color: AT.bgWarm,
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: DropdownButton<String>(
                     value: selectedRoleId,
                     isExpanded: true,
-                    dropdownColor: AppColors.cardBackground,
+                    dropdownColor: AT.white,
                     underline: const SizedBox(),
-                    style: AppTypography.bodyLarge.copyWith(color: AppColors.textPrimary),
+                    style: AppTypography.bodyLarge.copyWith(color: AT.ink1),
                     items: auth.roles.map((role) => DropdownMenuItem(
                       value: role.id,
                       child: Text(role.name),
@@ -1882,10 +1883,10 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                     },
                   ),
                 ),
-                const SizedBox(height: Spacing.md),
+                const SizedBox(height: AT.rowPadH),
                 Row(
                   children: [
-                    Text('Aktivní', style: AppTypography.bodyMedium.copyWith(color: AppColors.textPrimary)),
+                    Text('Aktivní', style: AT.rowTitle.copyWith(fontWeight: FontWeight.w400)),
                     const Spacer(),
                     Switch(
                       value: isActive,
@@ -1894,25 +1895,25 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                     ),
                   ],
                 ),
-                const SizedBox(height: Spacing.lg),
+                const SizedBox(height: AT.pagePad),
                 // Admin access section
                 if (hasAdmin) ...[
                   Container(
-                    padding: const EdgeInsets.all(Spacing.md),
+                    padding: const EdgeInsets.all(AT.rowPadH),
                     decoration: BoxDecoration(
-                      color: AppColors.backgroundTertiary,
+                      color: AT.bgWarm,
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Row(
                       children: [
                         Icon(Icons.verified_user, color: AppColors.success, size: 20),
-                        const SizedBox(width: Spacing.sm),
+                        const SizedBox(width: 8),
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text('Admin přístup', style: AppTypography.labelSmall.copyWith(color: AppColors.textTertiary)),
-                              Text(member.username ?? '', style: AppTypography.bodyMedium.copyWith(color: AppColors.textPrimary)),
+                              Text('Admin přístup', style: AppTypography.labelSmall.copyWith(color: AT.ink3)),
+                              Text(member.username ?? '', style: AT.rowTitle.copyWith(fontWeight: FontWeight.w400)),
                             ],
                           ),
                         ),
@@ -1929,7 +1930,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                 ] else ...[
                   Row(
                     children: [
-                      Text('Přidat admin přístup', style: AppTypography.labelSmall.copyWith(color: AppColors.textTertiary)),
+                      Text('Přidat admin přístup', style: AppTypography.labelSmall.copyWith(color: AT.ink3)),
                       const Spacer(),
                       Switch(
                         value: addAdminAccess,
@@ -1939,17 +1940,17 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                     ],
                   ),
                   if (addAdminAccess) ...[
-                    const SizedBox(height: Spacing.sm),
+                    const SizedBox(height: 8),
                     TextField(
                       controller: emailController,
                       keyboardType: TextInputType.emailAddress,
-                      style: AppTypography.bodyLarge.copyWith(color: AppColors.textPrimary),
+                      style: AppTypography.bodyLarge.copyWith(color: AT.ink1),
                       decoration: const InputDecoration(hintText: 'E-mail'),
                     ),
-                    const SizedBox(height: Spacing.xs),
+                    const SizedBox(height: 6),
                     Text(
                       'Na e-mail bude odeslán odkaz pro nastavení hesla',
-                      style: AppTypography.caption.copyWith(color: AppColors.textTertiary),
+                      style: AT.sectionLabel,
                     ),
                   ],
                 ],
@@ -1964,7 +1965,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(dialogContext),
-              child: Text('Zrušit', style: AppTypography.labelLarge.copyWith(color: AppColors.textSecondary)),
+              child: Text('Zrušit', style: AppTypography.labelLarge.copyWith(color: AT.ink2)),
             ),
             TextButton(
               onPressed: isRegistering ? null : () async {
@@ -2034,16 +2035,16 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: AppColors.cardBackground,
-        title: Text('Smazat člena?', style: AppTypography.h3.copyWith(color: AppColors.textPrimary)),
+        backgroundColor: AT.white,
+        title: Text('Smazat člena?', style: AT.cardTitle.copyWith(fontSize: 17)),
         content: Text(
           'Člen "${member.name}" bude odstraněn.',
-          style: AppTypography.bodyMedium.copyWith(color: AppColors.textSecondary),
+          style: AT.rowSub,
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text('Zrušit', style: AppTypography.labelLarge.copyWith(color: AppColors.textSecondary)),
+            child: Text('Zrušit', style: AppTypography.labelLarge.copyWith(color: AT.ink2)),
           ),
           TextButton(
             onPressed: () {
@@ -2065,24 +2066,24 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
       context: context,
       builder: (context) => StatefulBuilder(
         builder: (context, setDialogState) => AlertDialog(
-          backgroundColor: AppColors.cardBackground,
-          title: Text('Nová role', style: AppTypography.h3.copyWith(color: AppColors.textPrimary)),
+          backgroundColor: AT.white,
+          title: Text('Nová role', style: AT.cardTitle.copyWith(fontSize: 17)),
           content: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
                 TextField(
                   controller: nameController,
-                  style: AppTypography.bodyLarge.copyWith(color: AppColors.textPrimary),
+                  style: AppTypography.bodyLarge.copyWith(color: AT.ink1),
                   decoration: const InputDecoration(hintText: 'Název role'),
                 ),
-                const SizedBox(height: Spacing.lg),
-                Text('Oprávnění', style: AppTypography.labelSmall.copyWith(color: AppColors.textTertiary)),
-                const SizedBox(height: Spacing.sm),
+                const SizedBox(height: AT.pagePad),
+                Text('Oprávnění', style: AppTypography.labelSmall.copyWith(color: AT.ink3)),
+                const SizedBox(height: 8),
                 ...StaffRole.allPermissions.entries.map((entry) {
                   return CheckboxListTile(
                     value: selectedPermissions.contains(entry.key),
-                    title: Text(entry.value, style: AppTypography.bodyMedium.copyWith(color: AppColors.textPrimary)),
+                    title: Text(entry.value, style: AT.rowTitle.copyWith(fontWeight: FontWeight.w400)),
                     activeColor: AppColors.primary,
                     checkColor: Colors.white,
                     contentPadding: EdgeInsets.zero,
@@ -2104,7 +2105,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: Text('Zrušit', style: AppTypography.labelLarge.copyWith(color: AppColors.textSecondary)),
+              child: Text('Zrušit', style: AppTypography.labelLarge.copyWith(color: AT.ink2)),
             ),
             TextButton(
               onPressed: () {
@@ -2129,25 +2130,25 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
       context: context,
       builder: (context) => StatefulBuilder(
         builder: (context, setDialogState) => AlertDialog(
-          backgroundColor: AppColors.cardBackground,
-          title: Text('Upravit roli', style: AppTypography.h3.copyWith(color: AppColors.textPrimary)),
+          backgroundColor: AT.white,
+          title: Text('Upravit roli', style: AT.cardTitle.copyWith(fontSize: 17)),
           content: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
                 TextField(
                   controller: nameController,
-                  style: AppTypography.bodyLarge.copyWith(color: AppColors.textPrimary),
+                  style: AppTypography.bodyLarge.copyWith(color: AT.ink1),
                   decoration: const InputDecoration(hintText: 'Název role'),
                   enabled: !role.isDefault,
                 ),
-                const SizedBox(height: Spacing.lg),
-                Text('Oprávnění', style: AppTypography.labelSmall.copyWith(color: AppColors.textTertiary)),
-                const SizedBox(height: Spacing.sm),
+                const SizedBox(height: AT.pagePad),
+                Text('Oprávnění', style: AppTypography.labelSmall.copyWith(color: AT.ink3)),
+                const SizedBox(height: 8),
                 ...StaffRole.allPermissions.entries.map((entry) {
                   return CheckboxListTile(
                     value: selectedPermissions.contains(entry.key),
-                    title: Text(entry.value, style: AppTypography.bodyMedium.copyWith(color: AppColors.textPrimary)),
+                    title: Text(entry.value, style: AT.rowTitle.copyWith(fontWeight: FontWeight.w400)),
                     activeColor: AppColors.primary,
                     checkColor: Colors.white,
                     contentPadding: EdgeInsets.zero,
@@ -2169,7 +2170,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(context),
-              child: Text('Zrušit', style: AppTypography.labelLarge.copyWith(color: AppColors.textSecondary)),
+              child: Text('Zrušit', style: AppTypography.labelLarge.copyWith(color: AT.ink2)),
             ),
             TextButton(
               onPressed: () {
@@ -2197,17 +2198,17 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: AppColors.cardBackground,
-        title: Text('Nová kategorie', style: AppTypography.h3.copyWith(color: AppColors.textPrimary)),
+        backgroundColor: AT.white,
+        title: Text('Nová kategorie', style: AT.cardTitle.copyWith(fontSize: 17)),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             TextField(
               controller: nameController,
-              style: AppTypography.bodyLarge.copyWith(color: AppColors.textPrimary),
+              style: AppTypography.bodyLarge.copyWith(color: AT.ink1),
               decoration: const InputDecoration(hintText: 'Název kategorie'),
             ),
-            const SizedBox(height: Spacing.md),
+            const SizedBox(height: AT.rowPadH),
             TextField(
               controller: emojiController,
               style: const TextStyle(fontSize: 28),
@@ -2218,7 +2219,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text('Zrušit', style: AppTypography.labelLarge.copyWith(color: AppColors.textSecondary)),
+            child: Text('Zrušit', style: AppTypography.labelLarge.copyWith(color: AT.ink2)),
           ),
           TextButton(
             onPressed: () {
@@ -2242,16 +2243,16 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        backgroundColor: AppColors.cardBackground,
-        title: Text('Smazat kategorii?', style: AppTypography.h3.copyWith(color: AppColors.textPrimary)),
+        backgroundColor: AT.white,
+        title: Text('Smazat kategorii?', style: AT.cardTitle.copyWith(fontSize: 17)),
         content: Text(
           'Kategorie "${cat.title}" a jejích $productCount produktů bude smazáno.',
-          style: AppTypography.bodyMedium.copyWith(color: AppColors.textSecondary),
+          style: AT.rowSub,
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text('Zrušit', style: AppTypography.labelLarge.copyWith(color: AppColors.textSecondary)),
+            child: Text('Zrušit', style: AppTypography.labelLarge.copyWith(color: AT.ink2)),
           ),
           TextButton(
             onPressed: () {
@@ -2281,11 +2282,11 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
       context: context,
       builder: (context) => StatefulBuilder(
         builder: (context, setDialogState) => Dialog(
-          backgroundColor: AppColors.cardBackground,
+          backgroundColor: AT.white,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
           child: Container(
             width: 640,
-            padding: const EdgeInsets.all(Spacing.lg),
+            padding: const EdgeInsets.all(AT.pagePad),
             child: SingleChildScrollView(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -2296,18 +2297,18 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                     children: [
                       IconButton(
                         onPressed: () => Navigator.pop(context),
-                        icon: Icon(Icons.arrow_back, color: AppColors.textPrimary, size: 20),
+                        icon: Icon(Icons.arrow_back, color: AT.ink1, size: 20),
                         padding: EdgeInsets.zero,
                         constraints: const BoxConstraints(),
                       ),
-                      const SizedBox(width: Spacing.sm),
+                      const SizedBox(width: 8),
                       Text(
                         isEditing ? 'Upravit produkt' : 'Nový produkt',
-                        style: AppTypography.h3.copyWith(color: AppColors.textPrimary),
+                        style: AT.cardTitle.copyWith(fontSize: 17),
                       ),
                     ],
                   ),
-                  const SizedBox(height: Spacing.lg),
+                  const SizedBox(height: AT.pagePad),
 
                   // Two-column layout
                   Row(
@@ -2318,39 +2319,39 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text('Název produktu', style: AppTypography.caption.copyWith(color: AppColors.textSecondary)),
+                            Text('Název produktu', style: AT.sectionLabel),
                             const SizedBox(height: Spacing.xxs),
                             TextField(
                               controller: nameController,
-                              style: AppTypography.bodyLarge.copyWith(color: AppColors.textPrimary),
+                              style: AppTypography.bodyLarge.copyWith(color: AT.ink1),
                               decoration: const InputDecoration(hintText: 'např. French Martini'),
                               autofocus: !isEditing,
                             ),
-                            const SizedBox(height: Spacing.md),
-                            Text('Popis produktu', style: AppTypography.caption.copyWith(color: AppColors.textSecondary)),
+                            const SizedBox(height: AT.rowPadH),
+                            Text('Popis produktu', style: AT.sectionLabel),
                             const SizedBox(height: Spacing.xxs),
                             TextField(
                               controller: descController,
-                              style: AppTypography.bodyMedium.copyWith(color: AppColors.textPrimary),
+                              style: AT.rowTitle.copyWith(fontWeight: FontWeight.w400),
                               decoration: const InputDecoration(hintText: 'Volitelný popis...'),
                               maxLines: 3,
                               minLines: 2,
                             ),
-                            const SizedBox(height: Spacing.md),
-                            Text('Kategorie', style: AppTypography.caption.copyWith(color: AppColors.textSecondary)),
+                            const SizedBox(height: AT.rowPadH),
+                            Text('Kategorie', style: AT.sectionLabel),
                             const SizedBox(height: Spacing.xxs),
                             Container(
                               padding: const EdgeInsets.symmetric(horizontal: Spacing.md),
                               decoration: BoxDecoration(
-                                color: AppColors.backgroundTertiary,
+                                color: AT.bgWarm,
                                 borderRadius: BorderRadius.circular(8),
                               ),
                               child: DropdownButton<String>(
                                 value: selectedCategoryId,
                                 isExpanded: true,
-                                dropdownColor: AppColors.cardBackground,
+                                dropdownColor: AT.white,
                                 underline: const SizedBox(),
-                                style: AppTypography.bodyLarge.copyWith(color: AppColors.textPrimary),
+                                style: AppTypography.bodyLarge.copyWith(color: AT.ink1),
                                 items: vm.categories.map((cat) => DropdownMenuItem(
                                   value: cat.id,
                                   child: Text('${cat.emoji}  ${cat.title}'),
@@ -2369,45 +2370,45 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text('Cena položky', style: AppTypography.caption.copyWith(color: AppColors.textSecondary)),
+                            Text('Cena položky', style: AT.sectionLabel),
                             const SizedBox(height: Spacing.xxs),
                             TextField(
                               controller: priceController,
                               keyboardType: TextInputType.number,
-                              style: AppTypography.bodyLarge.copyWith(color: AppColors.textPrimary),
+                              style: AppTypography.bodyLarge.copyWith(color: AT.ink1),
                               decoration: InputDecoration(
                                 hintText: '0',
                                 suffixText: 'Kč',
-                                suffixStyle: AppTypography.bodyLarge.copyWith(color: AppColors.textSecondary),
+                                suffixStyle: AT.rowTitle.copyWith(color: AT.ink3),
                               ),
                             ),
-                            const SizedBox(height: Spacing.md),
-                            Text('Emoji', style: AppTypography.caption.copyWith(color: AppColors.textSecondary)),
+                            const SizedBox(height: AT.rowPadH),
+                            Text('Emoji', style: AT.sectionLabel),
                             const SizedBox(height: Spacing.xxs),
                             TextField(
                               controller: emojiController,
                               style: const TextStyle(fontSize: 28),
                               decoration: const InputDecoration(hintText: '📦'),
                             ),
-                            const SizedBox(height: Spacing.lg),
+                            const SizedBox(height: AT.pagePad),
                             Container(
                               padding: const EdgeInsets.symmetric(horizontal: Spacing.md, vertical: Spacing.xs),
                               decoration: BoxDecoration(
-                                color: AppColors.backgroundTertiary,
+                                color: AT.bgWarm,
                                 borderRadius: BorderRadius.circular(8),
                               ),
                               child: Row(
                                 children: [
                                   Icon(
                                     isAvailable ? Icons.visibility : Icons.visibility_off,
-                                    color: isAvailable ? AppColors.success : AppColors.textTertiary,
+                                    color: isAvailable ? AppColors.success : AT.ink3,
                                     size: 20,
                                   ),
-                                  const SizedBox(width: Spacing.sm),
+                                  const SizedBox(width: 8),
                                   Expanded(
                                     child: Text(
                                       'Dostupný v tabletu',
-                                      style: AppTypography.bodyMedium.copyWith(color: AppColors.textPrimary),
+                                      style: AT.rowTitle.copyWith(fontWeight: FontWeight.w400),
                                     ),
                                   ),
                                   Switch(
@@ -2423,7 +2424,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                       ),
                     ],
                   ),
-                  const SizedBox(height: Spacing.xl),
+                  const SizedBox(height: 28),
 
                   // Action buttons
                   Row(
@@ -2464,7 +2465,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                         child: Text(isEditing ? 'Uložit' : 'Přidat'),
                       ),
                       if (isEditing) ...[
-                        const SizedBox(width: Spacing.md),
+                        const SizedBox(width: AT.cardGap),
                         OutlinedButton(
                           onPressed: () {
                             final price = double.tryParse(priceController.text);
@@ -2492,7 +2493,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                       const Spacer(),
                       TextButton(
                         onPressed: () => Navigator.pop(context),
-                        child: Text('Zrušit', style: AppTypography.labelLarge.copyWith(color: AppColors.textSecondary)),
+                        child: Text('Zrušit', style: AppTypography.labelLarge.copyWith(color: AT.ink2)),
                       ),
                     ],
                   ),
@@ -2505,4 +2506,5 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     );
   }
 }
+
 
