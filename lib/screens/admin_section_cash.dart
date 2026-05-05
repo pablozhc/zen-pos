@@ -1,28 +1,25 @@
-﻿import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:uuid/uuid.dart';
 import '../models/cash_movement_model.dart';
 import '../models/payment_model.dart';
 import '../services/firestore_service.dart';
 import '../theme/app_colors.dart';
-import '../theme/app_typography.dart';
-import '../theme/app_spacing.dart';
 import '../utils/currency_formatter.dart';
+import 'admin_widgets.dart';
 
 class AdminSectionCash extends StatefulWidget {
   final List<Payment> payments;
-
   const AdminSectionCash({super.key, required this.payments});
 
   @override
   State<AdminSectionCash> createState() => _AdminSectionCashState();
 }
 
-class _AdminSectionCashState extends State<AdminSectionCash>
-    with SingleTickerProviderStateMixin {
+class _AdminSectionCashState extends State<AdminSectionCash> with SingleTickerProviderStateMixin {
   late TabController _tabController;
   final _fs = FirestoreService();
-  final _dateFormat = DateFormat('dd.MM.yyyy HH:mm');
+  final _df = DateFormat('dd.MM.yyyy HH:mm');
 
   @override
   void initState() {
@@ -42,57 +39,44 @@ class _AdminSectionCashState extends State<AdminSectionCash>
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Container(
-          color: AppColors.background,
-          padding: const EdgeInsets.fromLTRB(
-              Spacing.lg, Spacing.lg, Spacing.lg, 0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Text('Pokladna',
-                      style: AppTypography.h2
-                          .copyWith(color: AppColors.textPrimary)),
-                  const Spacer(),
-                  ElevatedButton.icon(
-                    onPressed: _showAddMovementDialog,
-                    icon: const Icon(Icons.add, size: 18),
-                    label: const Text('Přidat pohyb'),
-                  ),
-                  const SizedBox(width: Spacing.sm),
-                  OutlinedButton.icon(
-                    onPressed: _showClosureDialog,
-                    icon: const Icon(Icons.lock_clock, size: 18),
-                    label: const Text('Uzávěrka'),
-                    style: OutlinedButton.styleFrom(
-                        foregroundColor: AppColors.warning),
-                  ),
-                ],
-              ),
-              const SizedBox(height: Spacing.md),
-              TabBar(
-                controller: _tabController,
-                tabs: const [
-                  Tab(text: 'Pohyb hotovosti'),
-                  Tab(text: 'Uzávěrky'),
-                ],
-              ),
-            ],
+    return Expanded(
+      child: Column(
+        children: [
+          Container(
+            color: AT.bg,
+            padding: const EdgeInsets.fromLTRB(AT.pagePad, AT.pagePad, AT.pagePad, 0),
+            child: Row(
+              children: [
+                TabBar(
+                  controller: _tabController,
+                  isScrollable: true,
+                  tabAlignment: TabAlignment.start,
+                  tabs: const [Tab(text: 'Pohyb hotovosti'), Tab(text: 'Uzávěrky')],
+                ),
+                const Spacer(),
+                ElevatedButton.icon(
+                  onPressed: _showAddMovementDialog,
+                  icon: const Icon(Icons.add, size: 16),
+                  label: const Text('Přidat pohyb'),
+                ),
+                const SizedBox(width: 8),
+                OutlinedButton.icon(
+                  onPressed: _showClosureDialog,
+                  icon: const Icon(Icons.lock_clock_rounded, size: 16),
+                  label: const Text('Uzávěrka'),
+                  style: OutlinedButton.styleFrom(foregroundColor: AppColors.warning),
+                ),
+              ],
+            ),
           ),
-        ),
-        Expanded(
-          child: TabBarView(
-            controller: _tabController,
-            children: [
-              _buildMovementsTab(),
-              _buildClosuresTab(),
-            ],
+          Expanded(
+            child: TabBarView(
+              controller: _tabController,
+              children: [_buildMovementsTab(), _buildClosuresTab()],
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
@@ -102,22 +86,10 @@ class _AdminSectionCashState extends State<AdminSectionCash>
       builder: (context, snapshot) {
         final movements = snapshot.data ?? [];
         if (movements.isEmpty) {
-          return Center(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(Icons.account_balance_wallet_outlined,
-                    size: 48, color: AppColors.textTertiary),
-                const SizedBox(height: Spacing.sm),
-                Text('Žádné pohyby hotovosti',
-                    style: AppTypography.bodyMedium
-                        .copyWith(color: AppColors.textTertiary)),
-                const SizedBox(height: Spacing.sm),
-                ElevatedButton(
-                    onPressed: _showAddMovementDialog,
-                    child: const Text('Přidat první pohyb')),
-              ],
-            ),
+          return const AdminEmptyState(
+            icon: Icons.account_balance_wallet_rounded,
+            title: 'Žádné pohyby hotovosti',
+            subtitle: 'Přidejte první pohyb hotovosti',
           );
         }
 
@@ -126,114 +98,61 @@ class _AdminSectionCashState extends State<AdminSectionCash>
           balance += m.type.isPositive ? m.amount : -m.amount;
         }
 
-        return Column(
+        return AdminContent(
           children: [
-            Container(
-              margin: const EdgeInsets.all(Spacing.md),
-              padding: const EdgeInsets.all(Spacing.md),
-              decoration: BoxDecoration(
-                color: AppColors.cardBackground,
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 8, offset: const Offset(0, 2))],
-              ),
-              child: Row(
-                children: [
-                  _balanceCard('Hotovost z tržeb',
-                      CurrencyFormatter.format(_totalCashRevenue),
-                      AppColors.success),
-                  const SizedBox(width: Spacing.md),
-                  _balanceCard('Pohyby', CurrencyFormatter.format(balance),
-                      balance >= 0 ? AppColors.info : AppColors.error),
-                ],
-              ),
+            Wrap(
+              spacing: AT.cardGap,
+              runSpacing: AT.cardGap,
+              children: [
+                AdminKpiCard(
+                  value: CurrencyFormatter.format(_totalCashRevenue),
+                  label: 'Hotovost z tržeb',
+                  icon: Icons.point_of_sale_rounded,
+                  accentColor: AppColors.success,
+                ),
+                AdminKpiCard(
+                  value: CurrencyFormatter.format(balance),
+                  label: 'Saldo pohybů',
+                  icon: Icons.swap_vert_rounded,
+                  accentColor: balance >= 0 ? AppColors.info : AppColors.error,
+                ),
+              ],
             ),
-            Expanded(
-              child: ListView.separated(
-                padding: const EdgeInsets.symmetric(horizontal: Spacing.md),
-                itemCount: movements.length,
-                separatorBuilder: (_, __) =>
-                    Divider(height: 1, color: AppColors.divider),
-                itemBuilder: (_, i) => _movementRow(movements[i]),
-              ),
+            const SizedBox(height: AT.cardGap),
+            AdminCardSection(
+              title: 'Pohyby',
+              children: movements.asMap().entries.map((e) {
+                final m = e.value;
+                final isPositive = m.type.isPositive;
+                return AdminListRow(
+                  leading: Container(
+                    width: 34, height: 34,
+                    decoration: BoxDecoration(
+                      color: (isPositive ? AppColors.success : AppColors.error).withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(9),
+                    ),
+                    child: Icon(
+                      isPositive ? Icons.arrow_downward_rounded : Icons.arrow_upward_rounded,
+                      size: 16,
+                      color: isPositive ? AppColors.success : AppColors.error,
+                    ),
+                  ),
+                  title: m.type.title,
+                  subtitle: m.note ?? _df.format(m.createdAt),
+                  value: '${isPositive ? '+' : '−'} ${CurrencyFormatter.format(m.amount)}',
+                  trailing: IconButton(
+                    icon: Icon(Icons.delete_outline_rounded, size: 16, color: AT.ink3),
+                    onPressed: () => _fs.deleteCashMovement(m.id),
+                    constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+                    padding: EdgeInsets.zero,
+                  ),
+                  showDivider: e.key < movements.length - 1,
+                );
+              }).toList(),
             ),
           ],
         );
       },
-    );
-  }
-
-  Widget _balanceCard(String label, String value, Color color) {
-    return Expanded(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(label,
-              style: AppTypography.caption
-                  .copyWith(color: AppColors.textSecondary)),
-          const SizedBox(height: 4),
-          Text(value,
-              style: AppTypography.h3.copyWith(color: color)),
-        ],
-      ),
-    );
-  }
-
-  Widget _movementRow(CashMovement m) {
-    final isPositive = m.type.isPositive;
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: Spacing.sm),
-      child: Row(
-        children: [
-          Container(
-            width: 36,
-            height: 36,
-            decoration: BoxDecoration(
-              color: (isPositive ? AppColors.success : AppColors.error)
-                  .withValues(alpha: 0.12),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Icon(
-              isPositive ? Icons.arrow_downward : Icons.arrow_upward,
-              color: isPositive ? AppColors.success : AppColors.error,
-              size: 18,
-            ),
-          ),
-          const SizedBox(width: Spacing.sm),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(m.type.title,
-                    style: AppTypography.labelMedium
-                        .copyWith(color: AppColors.textPrimary)),
-                if (m.note != null)
-                  Text(m.note!,
-                      style: AppTypography.caption
-                          .copyWith(color: AppColors.textSecondary)),
-              ],
-            ),
-          ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Text(
-                '${isPositive ? '+' : '-'} ${CurrencyFormatter.format(m.amount)}',
-                style: AppTypography.labelMedium.copyWith(
-                    color: isPositive ? AppColors.success : AppColors.error),
-              ),
-              Text(_dateFormat.format(m.createdAt),
-                  style: AppTypography.caption
-                      .copyWith(color: AppColors.textTertiary)),
-            ],
-          ),
-          const SizedBox(width: Spacing.sm),
-          IconButton(
-            icon: Icon(Icons.delete_outline,
-                size: 18, color: AppColors.textTertiary),
-            onPressed: () => _fs.deleteCashMovement(m.id),
-          ),
-        ],
-      ),
     );
   }
 
@@ -243,81 +162,39 @@ class _AdminSectionCashState extends State<AdminSectionCash>
       builder: (context, snapshot) {
         final closures = snapshot.data ?? [];
         if (closures.isEmpty) {
-          return Center(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(Icons.lock_clock_outlined,
-                    size: 48, color: AppColors.textTertiary),
-                const SizedBox(height: Spacing.sm),
-                Text('Žádné uzávěrky',
-                    style: AppTypography.bodyMedium
-                        .copyWith(color: AppColors.textTertiary)),
-                const SizedBox(height: Spacing.sm),
-                ElevatedButton(
-                    onPressed: _showClosureDialog,
-                    child: const Text('Provést první uzávěrku')),
-              ],
-            ),
+          return const AdminEmptyState(
+            icon: Icons.lock_clock_rounded,
+            title: 'Žádné uzávěrky',
+            subtitle: 'Proveďte první uzávěrku dne',
           );
         }
-
-        return ListView.separated(
-          padding: const EdgeInsets.all(Spacing.md),
-          itemCount: closures.length,
-          separatorBuilder: (_, __) =>
-              Divider(height: 1, color: AppColors.divider),
-          itemBuilder: (_, i) => _closureRow(closures[i]),
+        final df = DateFormat('dd.MM.yyyy');
+        final tf = DateFormat('HH:mm');
+        return AdminContent(
+          children: [
+            AdminCardSection(
+              title: 'Historie uzávěrek',
+              children: closures.asMap().entries.map((e) {
+                final c = e.value;
+                return AdminListRow(
+                  leading: Container(
+                    width: 34, height: 34,
+                    decoration: BoxDecoration(
+                      color: AT.indigo.withValues(alpha: 0.10),
+                      borderRadius: BorderRadius.circular(9),
+                    ),
+                    child: const Icon(Icons.receipt_long_rounded, size: 16, color: AT.indigo),
+                  ),
+                  title: 'Uzávěrka ${df.format(c.closedAt)}',
+                  subtitle: '${tf.format(c.openedAt)} – ${tf.format(c.closedAt)}  ·  ${c.paymentCount} plateb',
+                  value: CurrencyFormatter.format(c.totalRevenue),
+                  showDivider: e.key < closures.length - 1,
+                );
+              }).toList(),
+            ),
+          ],
         );
       },
-    );
-  }
-
-  Widget _closureRow(DayClosure c) {
-    final df = DateFormat('dd.MM.yyyy');
-    final tf = DateFormat('HH:mm');
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: Spacing.md),
-      child: Row(
-        children: [
-          Container(
-            width: 44,
-            height: 44,
-            decoration: BoxDecoration(
-              color: AppColors.primary.withValues(alpha: 0.12),
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Icon(Icons.receipt_long, color: AppColors.primary, size: 22),
-          ),
-          const SizedBox(width: Spacing.md),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('Uzávěrka ${df.format(c.closedAt)}',
-                    style: AppTypography.labelMedium
-                        .copyWith(color: AppColors.textPrimary)),
-                Text(
-                    '${tf.format(c.openedAt)} – ${tf.format(c.closedAt)}  •  ${c.paymentCount} plateb',
-                    style: AppTypography.caption
-                        .copyWith(color: AppColors.textSecondary)),
-              ],
-            ),
-          ),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Text(CurrencyFormatter.format(c.totalRevenue),
-                  style: AppTypography.labelMedium
-                      .copyWith(color: AppColors.textPrimary)),
-              Text(
-                  'Hotovost: ${CurrencyFormatter.format(c.totalCash)} | Karta: ${CurrencyFormatter.format(c.totalCard)}',
-                  style: AppTypography.caption
-                      .copyWith(color: AppColors.textSecondary)),
-            ],
-          ),
-        ],
-      ),
     );
   }
 
@@ -325,7 +202,6 @@ class _AdminSectionCashState extends State<AdminSectionCash>
     CashMovementType selectedType = CashMovementType.income;
     final amountCtrl = TextEditingController();
     final noteCtrl = TextEditingController();
-
     showDialog(
       context: context,
       builder: (ctx) => StatefulBuilder(
@@ -336,43 +212,24 @@ class _AdminSectionCashState extends State<AdminSectionCash>
             children: [
               DropdownButtonFormField<CashMovementType>(
                 value: selectedType,
-                items: [
-                  CashMovementType.income,
-                  CashMovementType.expense,
-                ].map((t) => DropdownMenuItem(value: t, child: Text(t.title))).toList(),
+                items: [CashMovementType.income, CashMovementType.expense]
+                    .map((t) => DropdownMenuItem(value: t, child: Text(t.title))).toList(),
                 onChanged: (v) => setS(() => selectedType = v!),
                 decoration: const InputDecoration(labelText: 'Typ pohybu'),
               ),
-              const SizedBox(height: Spacing.sm),
-              TextField(
-                controller: amountCtrl,
-                keyboardType:
-                    const TextInputType.numberWithOptions(decimal: true),
-                decoration: const InputDecoration(
-                    labelText: 'Částka (Kč)', suffixText: 'Kč'),
-              ),
-              const SizedBox(height: Spacing.sm),
-              TextField(
-                controller: noteCtrl,
-                decoration: const InputDecoration(labelText: 'Poznámka'),
-              ),
+              const SizedBox(height: 12),
+              TextField(controller: amountCtrl, keyboardType: const TextInputType.numberWithOptions(decimal: true), decoration: const InputDecoration(labelText: 'Částka', suffixText: 'Kč')),
+              const SizedBox(height: 12),
+              TextField(controller: noteCtrl, decoration: const InputDecoration(labelText: 'Poznámka')),
             ],
           ),
           actions: [
-            TextButton(
-                onPressed: () => Navigator.pop(ctx),
-                child: const Text('Zrušit')),
+            TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Zrušit')),
             ElevatedButton(
               onPressed: () {
-                final amount = double.tryParse(
-                    amountCtrl.text.replaceAll(',', '.'));
+                final amount = double.tryParse(amountCtrl.text.replaceAll(',', '.'));
                 if (amount == null || amount <= 0) return;
-                _fs.addCashMovement(CashMovement(
-                  id: const Uuid().v4(),
-                  type: selectedType,
-                  amount: amount,
-                  note: noteCtrl.text.isNotEmpty ? noteCtrl.text : null,
-                ));
+                _fs.addCashMovement(CashMovement(id: const Uuid().v4(), type: selectedType, amount: amount, note: noteCtrl.text.isNotEmpty ? noteCtrl.text : null));
                 Navigator.pop(ctx);
               },
               child: const Text('Uložit'),
@@ -387,19 +244,10 @@ class _AdminSectionCashState extends State<AdminSectionCash>
     final openingCtrl = TextEditingController(text: '0');
     final closingCtrl = TextEditingController();
     final noteCtrl = TextEditingController();
-
-    final cashPayments =
-        widget.payments.where((p) => p.method == PaymentMethod.cash);
-    final cardPayments =
-        widget.payments.where((p) => p.method == PaymentMethod.card);
-    final totalCash =
-        cashPayments.fold(0.0, (s, p) => s + p.amount);
-    final totalCard =
-        cardPayments.fold(0.0, (s, p) => s + p.amount);
-    final totalTips =
-        widget.payments.fold(0.0, (s, p) => s + p.tip);
-    final totalRevenue =
-        widget.payments.fold(0.0, (s, p) => s + p.totalWithTip);
+    final totalCash = widget.payments.where((p) => p.method == PaymentMethod.cash).fold(0.0, (s, p) => s + p.amount);
+    final totalCard = widget.payments.where((p) => p.method == PaymentMethod.card).fold(0.0, (s, p) => s + p.amount);
+    final totalTips = widget.payments.fold(0.0, (s, p) => s + p.tip);
+    final totalRevenue = widget.payments.fold(0.0, (s, p) => s + p.totalWithTip);
 
     showDialog(
       context: context,
@@ -410,75 +258,45 @@ class _AdminSectionCashState extends State<AdminSectionCash>
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Souhrn období:',
-                  style: AppTypography.labelMedium
-                      .copyWith(color: AppColors.textPrimary)),
-              const SizedBox(height: Spacing.sm),
-              _summaryRow('Celkové tržby',
-                  CurrencyFormatter.format(totalRevenue)),
-              _summaryRow(
-                  'Hotovost', CurrencyFormatter.format(totalCash)),
-              _summaryRow('Karta', CurrencyFormatter.format(totalCard)),
-              _summaryRow(
-                  'Spropitné', CurrencyFormatter.format(totalTips)),
-              _summaryRow('Počet plateb', '${widget.payments.length}'),
-              const Divider(height: Spacing.lg),
-              TextField(
-                controller: openingCtrl,
-                keyboardType:
-                    const TextInputType.numberWithOptions(decimal: true),
-                decoration: const InputDecoration(
-                    labelText: 'Počáteční stav pokladny (Kč)',
-                    suffixText: 'Kč'),
-              ),
-              const SizedBox(height: Spacing.sm),
-              TextField(
-                controller: closingCtrl,
-                keyboardType:
-                    const TextInputType.numberWithOptions(decimal: true),
-                decoration: const InputDecoration(
-                    labelText: 'Skutečný stav pokladny (Kč)',
-                    suffixText: 'Kč'),
-              ),
-              const SizedBox(height: Spacing.sm),
-              TextField(
-                controller: noteCtrl,
-                decoration:
-                    const InputDecoration(labelText: 'Poznámka'),
-              ),
+              ...[
+                ['Celkové tržby', CurrencyFormatter.format(totalRevenue)],
+                ['Hotovost',       CurrencyFormatter.format(totalCash)],
+                ['Karta',          CurrencyFormatter.format(totalCard)],
+                ['Spropitné',      CurrencyFormatter.format(totalTips)],
+                ['Počet plateb',   '${widget.payments.length}'],
+              ].map((row) => Padding(
+                padding: const EdgeInsets.symmetric(vertical: 4),
+                child: Row(children: [
+                  Expanded(child: Text(row[0], style: AT.rowSub)),
+                  Text(row[1], style: AT.rowTitle),
+                ]),
+              )),
+              const Divider(height: 24),
+              TextField(controller: openingCtrl, keyboardType: const TextInputType.numberWithOptions(decimal: true), decoration: const InputDecoration(labelText: 'Počáteční stav (Kč)', suffixText: 'Kč')),
+              const SizedBox(height: 12),
+              TextField(controller: closingCtrl, keyboardType: const TextInputType.numberWithOptions(decimal: true), decoration: const InputDecoration(labelText: 'Skutečný stav (Kč)', suffixText: 'Kč')),
+              const SizedBox(height: 12),
+              TextField(controller: noteCtrl, decoration: const InputDecoration(labelText: 'Poznámka')),
             ],
           ),
         ),
         actions: [
-          TextButton(
-              onPressed: () => Navigator.pop(ctx),
-              child: const Text('Zrušit')),
+          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Zrušit')),
           ElevatedButton(
             onPressed: () {
-              final opening =
-                  double.tryParse(openingCtrl.text.replaceAll(',', '.')) ??
-                      0;
-              final closing =
-                  double.tryParse(closingCtrl.text.replaceAll(',', '.')) ??
-                      0;
               final now = DateTime.now();
               _fs.addClosure(DayClosure(
                 id: const Uuid().v4(),
                 openedAt: now.subtract(const Duration(hours: 8)),
                 closedAt: now,
-                openingCash: opening,
-                closingCash: closing,
-                totalRevenue: totalRevenue,
-                totalCash: totalCash,
-                totalCard: totalCard,
-                totalTips: totalTips,
-                paymentCount: widget.payments.length,
+                openingCash: double.tryParse(openingCtrl.text.replaceAll(',', '.')) ?? 0,
+                closingCash: double.tryParse(closingCtrl.text.replaceAll(',', '.')) ?? 0,
+                totalRevenue: totalRevenue, totalCash: totalCash, totalCard: totalCard,
+                totalTips: totalTips, paymentCount: widget.payments.length,
                 note: noteCtrl.text.isNotEmpty ? noteCtrl.text : null,
               ));
               Navigator.pop(ctx);
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Uzávěrka provedena')),
-              );
+              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Uzávěrka provedena')));
             },
             child: const Text('Provést uzávěrku'),
           ),
@@ -486,22 +304,4 @@ class _AdminSectionCashState extends State<AdminSectionCash>
       ),
     );
   }
-
-  Widget _summaryRow(String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
-      child: Row(
-        children: [
-          Expanded(
-              child: Text(label,
-                  style: AppTypography.bodySmall
-                      .copyWith(color: AppColors.textSecondary))),
-          Text(value,
-              style: AppTypography.bodyMedium
-                  .copyWith(color: AppColors.textPrimary)),
-        ],
-      ),
-    );
-  }
 }
-
