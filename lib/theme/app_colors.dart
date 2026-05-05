@@ -3,21 +3,21 @@ import 'package:flutter/material.dart';
 class AppColors {
   static bool isDark = false; // Light mode default (admin)
 
-  // ── Primary brand (Storyous-inspired red) ──
-  static const Color primary = Color(0xFFE8445A);
-  static const Color primaryDark = Color(0xFFD03348);
-  static const Color primaryLight = Color(0xFFFF6B7A);
+  // ── Primary brand (Indigo) ──
+  static const Color primary = Color(0xFF5856D6);
+  static const Color primaryDark = Color(0xFF4240C4);
+  static const Color primaryLight = Color(0xFF7B79E8);
 
-  static const Color gradientStart = Color(0xFFE8445A);
-  static const Color gradientEnd = Color(0xFFD03348);
+  static const Color gradientStart = Color(0xFF5856D6);
+  static const Color gradientEnd = Color(0xFF4240C4);
 
-  // ── Admin light backgrounds ──
+  // ── Admin warm backgrounds ──
   static Color get background =>
       isDark ? const Color(0xFF1C1C1E) : const Color(0xFFFFFFFF);
   static Color get backgroundSecondary =>
-      isDark ? const Color(0xFF2C2C2E) : const Color(0xFFF2F2F7);
+      isDark ? const Color(0xFF2C2C2E) : const Color(0xFFFAF8F5);
   static Color get backgroundTertiary =>
-      isDark ? const Color(0xFF3A3A3C) : const Color(0xFFE5E5EA);
+      isDark ? const Color(0xFF3A3A3C) : const Color(0xFFF3F0EB);
 
   // ── Card & surface ──
   static Color get cardBackground =>
@@ -50,9 +50,9 @@ class AppColors {
 
   // ── Borders ──
   static Color get border =>
-      isDark ? const Color(0xFF38383A) : const Color(0xFFE5E5EA);
+      isDark ? const Color(0xFF38383A) : const Color(0xFFEDE9E3);
   static Color get divider =>
-      isDark ? const Color(0xFF38383A) : const Color(0xFFC6C6C8);
+      isDark ? const Color(0xFF38383A) : const Color(0xFFE0DCD5);
 
   // ── iOS-specific ──
   static const Color iosBlue = Color(0xFF007AFF);

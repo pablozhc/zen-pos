@@ -25,6 +25,8 @@ import 'admin_section_tables_manage.dart';
 import 'admin_section_pos_settings.dart';
 import 'admin_section_stock.dart';
 
+enum AdminGroup { reports, accounts, menu, team, settings }
+
 enum AdminSection {
   revenue, overview, history,
   profit, receipts, cash, storno,
@@ -37,6 +39,43 @@ enum AdminSection {
 
 enum RevenuePeriod { day, week, month }
 
+// Sub-tabs per group
+const _groupSections = {
+  AdminGroup.reports:   [AdminSection.revenue, AdminSection.profit, AdminSection.overview, AdminSection.history, AdminSection.storno],
+  AdminGroup.accounts:  [AdminSection.receipts, AdminSection.cash],
+  AdminGroup.menu:      [AdminSection.products, AdminSection.categories, AdminSection.addons, AdminSection.happyHours],
+  AdminGroup.team:      [AdminSection.staff, AdminSection.roles],
+  AdminGroup.settings:  [AdminSection.tablesManage, AdminSection.posSettings, AdminSection.stock, AdminSection.printer],
+};
+
+const _groupLabels = {
+  AdminGroup.reports:  'Přehledy',
+  AdminGroup.accounts: 'Účty',
+  AdminGroup.menu:     'Menu',
+  AdminGroup.team:     'Tým',
+  AdminGroup.settings: 'Nastavení',
+};
+
+const _sectionLabels = {
+  AdminSection.revenue:     'Tržby',
+  AdminSection.profit:      'Zisk',
+  AdminSection.overview:    'Přehled',
+  AdminSection.history:     'Historie',
+  AdminSection.storno:      'Storna',
+  AdminSection.receipts:    'Účtenky',
+  AdminSection.cash:        'Pokladna',
+  AdminSection.products:    'Produkty',
+  AdminSection.categories:  'Kategorie',
+  AdminSection.addons:      'Přídavky',
+  AdminSection.happyHours:  'Happy Hours',
+  AdminSection.staff:       'Personál',
+  AdminSection.roles:       'Role',
+  AdminSection.tablesManage:'Stoly',
+  AdminSection.posSettings: 'POS',
+  AdminSection.stock:       'Sklad',
+  AdminSection.printer:     'Tiskárna',
+};
+
 class AdminDashboardScreen extends StatefulWidget {
   const AdminDashboardScreen({super.key});
 
@@ -45,125 +84,86 @@ class AdminDashboardScreen extends StatefulWidget {
 }
 
 class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
+  AdminGroup _currentGroup = AdminGroup.reports;
   AdminSection _currentSection = AdminSection.revenue;
   RevenuePeriod _selectedPeriod = RevenuePeriod.day;
   String? _selectedCategoryId;
 
+  // ── Design tokens ──
+  static const Color _bg        = Color(0xFFFAF8F5);
+  static const Color _bgWarm    = Color(0xFFF3F0EB);
+  static const Color _border    = Color(0xFFEDE9E3);
+  static const Color _ink1      = Color(0xFF1A0F0A);
+  static const Color _ink2      = Color(0xFF5A4A3A);
+  static const Color _ink3      = Color(0xFF9A8F85);
+  static const Color _white     = Color(0xFFFFFFFF);
+  static const Color _indigo    = Color(0xFF5856D6);
+
+  void _selectGroup(AdminGroup group) {
+    final sections = _groupSections[group]!;
+    setState(() {
+      _currentGroup = group;
+      _currentSection = sections.first;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
-    // Watch theme to rebuild on toggle
     context.watch<ThemeViewModel>();
     return Scaffold(
-      backgroundColor: const Color(0xFFF2F2F7),
-      body: Row(
+      backgroundColor: _bg,
+      body: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          _buildSidebar(),
-          Expanded(
-            child: _buildContent(),
-          ),
+          _buildTopNav(),
+          _buildSubTabs(),
+          Expanded(child: _buildContent()),
         ],
       ),
     );
   }
 
-  Widget _buildSidebar() {
+  // ── TOP NAV ──────────────────────────────────────────────────
+  Widget _buildTopNav() {
+    final auth = context.read<AuthViewModel>();
     return Container(
-      width: 220,
+      height: 52,
+      color: _white,
+      padding: const EdgeInsets.symmetric(horizontal: 20),
       decoration: BoxDecoration(
-        color: AppColors.background,
-        border: Border(right: BorderSide(color: AppColors.border, width: 1)),
+        color: _white,
+        border: Border(bottom: BorderSide(color: _border)),
       ),
-      child: Column(
+      child: Row(
         children: [
-          // Header
+          // Logo
           Container(
-            padding: const EdgeInsets.fromLTRB(16, 20, 16, 16),
-            child: Row(
-              children: [
-                Container(
-                  width: 32,
-                  height: 32,
-                  decoration: BoxDecoration(
-                    color: AppColors.primary,
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: const Center(
-                    child: Text('Z',
-                        style: TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.w800,
-                            fontSize: 16)),
-                  ),
-                ),
-                const SizedBox(width: 10),
-                Text('Zen POS',
-                    style: AppTypography.labelLarge
-                        .copyWith(color: AppColors.textPrimary)),
-              ],
-            ),
+            width: 26, height: 26,
+            decoration: BoxDecoration(color: _indigo, borderRadius: BorderRadius.circular(7)),
+            child: const Center(child: Text('Z', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800, fontSize: 13))),
           ),
-          Divider(color: AppColors.border, height: 1),
-          // Scrollable nav
-          Expanded(
-            child: SingleChildScrollView(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildNavLabel('PŘEHLEDY'),
-                  _buildNavItem(AdminSection.revenue, Icons.bar_chart, 'Tržby'),
-                  _buildNavItem(AdminSection.profit, Icons.trending_up, 'Zisk'),
-                  _buildNavItem(AdminSection.overview, Icons.dashboard, 'Aktuální přehled'),
-                  _buildNavItem(AdminSection.history, Icons.history, 'Historie'),
-                  _buildNavItem(AdminSection.storno, Icons.undo, 'Storna a slevy'),
-                  const SizedBox(height: Spacing.xs),
-                  Divider(color: AppColors.divider),
-                  _buildNavLabel('ÚČTY'),
-                  _buildNavItem(AdminSection.receipts, Icons.receipt_long, 'Účtenky'),
-                  _buildNavItem(AdminSection.cash, Icons.account_balance_wallet, 'Pokladna'),
-                  const SizedBox(height: Spacing.xs),
-                  Divider(color: AppColors.divider),
-                  _buildNavLabel('MENU'),
-                  _buildNavItem(AdminSection.products, Icons.restaurant_menu, 'Produkty'),
-                  _buildNavItem(AdminSection.categories, Icons.category, 'Kategorie'),
-                  _buildNavItem(AdminSection.addons, Icons.add_circle_outline, 'Přídavky'),
-                  _buildNavItem(AdminSection.happyHours, Icons.schedule, 'Happy Hours'),
-                  const SizedBox(height: Spacing.xs),
-                  Divider(color: AppColors.divider),
-                  _buildNavLabel('PERSONÁL'),
-                  _buildNavItem(AdminSection.staff, Icons.people, 'Personál'),
-                  _buildNavItem(AdminSection.roles, Icons.security, 'Role'),
-                  const SizedBox(height: Spacing.xs),
-                  Divider(color: AppColors.divider),
-                  _buildNavLabel('SPRÁVA'),
-                  _buildNavItem(AdminSection.tablesManage, Icons.table_restaurant, 'Stoly'),
-                  _buildNavItem(AdminSection.posSettings, Icons.settings, 'Nastavení pokladny'),
-                  _buildNavItem(AdminSection.stock, Icons.inventory_2, 'Sklad'),
-                  _buildNavItem(AdminSection.printer, Icons.print, 'Tiskárna'),
-                  const SizedBox(height: Spacing.lg),
-                ],
-              ),
-            ),
-          ),
-          Divider(color: AppColors.border, height: 1),
-          InkWell(
+          const SizedBox(width: 6),
+          const Text('Zen POS', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w700, color: _ink1, letterSpacing: -0.2)),
+          const SizedBox(width: 28),
+          // Group tabs
+          ...AdminGroup.values.map((g) => _buildTopTab(g)),
+          const Spacer(),
+          // User avatar
+          GestureDetector(
             onTap: () {
               context.read<AuthViewModel>().logout();
               Navigator.of(context).pushReplacement(
                 MaterialPageRoute(builder: (_) => const AdminLoginScreen()),
               );
             },
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
-              child: Row(
-                children: [
-                  Icon(Icons.logout_rounded,
-                      color: AppColors.textTertiary, size: 16),
-                  const SizedBox(width: 10),
-                  Text('Odhlásit se',
-                      style: AppTypography.bodySmall
-                          .copyWith(color: AppColors.textTertiary)),
-                ],
+            child: Container(
+              width: 30, height: 30,
+              decoration: BoxDecoration(color: _indigo.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(15)),
+              child: Center(
+                child: Text(
+                  (auth.currentUser?.name.isNotEmpty == true) ? auth.currentUser!.name[0].toUpperCase() : 'A',
+                  style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: _indigo),
+                ),
               ),
             ),
           ),
@@ -172,46 +172,66 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     );
   }
 
-  Widget _buildNavLabel(String label) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 4),
-      child: Text(
-        label,
-        style: AppTypography.caption.copyWith(
-          color: AppColors.textTertiary,
-          letterSpacing: 0.8,
-          fontWeight: FontWeight.w600,
+  Widget _buildTopTab(AdminGroup group) {
+    final isActive = _currentGroup == group;
+    return GestureDetector(
+      onTap: () => _selectGroup(group),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 150),
+        margin: const EdgeInsets.only(right: 2),
+        padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 6),
+        decoration: BoxDecoration(
+          color: isActive ? _indigo : Colors.transparent,
+          borderRadius: BorderRadius.circular(7),
+        ),
+        child: Text(
+          _groupLabels[group]!,
+          style: TextStyle(
+            fontSize: 13,
+            fontWeight: isActive ? FontWeight.w600 : FontWeight.w500,
+            color: isActive ? _white : _ink3,
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildNavItem(AdminSection section, IconData icon, String title) {
+  // ── SUB-TABS ─────────────────────────────────────────────────
+  Widget _buildSubTabs() {
+    final sections = _groupSections[_currentGroup]!;
+    return Container(
+      height: 40,
+      color: _bgWarm,
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      decoration: BoxDecoration(
+        border: Border(bottom: BorderSide(color: _border)),
+      ),
+      child: Row(
+        children: sections.map((s) => _buildSubTab(s)).toList(),
+      ),
+    );
+  }
+
+  Widget _buildSubTab(AdminSection section) {
     final isActive = _currentSection == section;
-    return InkWell(
+    return GestureDetector(
       onTap: () => setState(() => _currentSection = section),
-      hoverColor: AppColors.primary.withValues(alpha: 0.05),
-      child: Container(
-        margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 1),
-        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 120),
+        margin: const EdgeInsets.only(right: 4, top: 5, bottom: 5),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
         decoration: BoxDecoration(
-          color: isActive ? AppColors.primary.withValues(alpha: 0.1) : Colors.transparent,
-          borderRadius: BorderRadius.circular(8),
+          color: isActive ? _white : Colors.transparent,
+          borderRadius: BorderRadius.circular(6),
+          boxShadow: isActive ? [BoxShadow(color: Colors.black.withValues(alpha: 0.08), blurRadius: 4, offset: const Offset(0, 1))] : [],
         ),
-        child: Row(
-          children: [
-            Icon(icon,
-                color: isActive ? AppColors.primary : AppColors.textSecondary,
-                size: 17),
-            const SizedBox(width: 10),
-            Text(
-              title,
-              style: AppTypography.bodySmall.copyWith(
-                color: isActive ? AppColors.primary : AppColors.textSecondary,
-                fontWeight: isActive ? FontWeight.w600 : FontWeight.w400,
-              ),
-            ),
-          ],
+        child: Text(
+          _sectionLabels[section]!,
+          style: TextStyle(
+            fontSize: 12,
+            fontWeight: isActive ? FontWeight.w600 : FontWeight.w500,
+            color: isActive ? _ink1 : _ink3,
+          ),
         ),
       ),
     );
@@ -306,6 +326,36 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
 
   // ==================== TRŽBY (REVENUE) ====================
 
+  Widget _buildPageHeader({
+    required String title,
+    String? subtitle,
+    Widget? trailing,
+  }) {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(24, 0, 20, 0),
+      height: 56,
+      decoration: BoxDecoration(
+        color: _white,
+        border: Border(bottom: BorderSide(color: _border)),
+      ),
+      child: Row(
+        children: [
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(title, style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w700, color: _ink1, letterSpacing: -0.3)),
+              if (subtitle != null)
+                Text(subtitle, style: const TextStyle(fontSize: 11, color: _ink3, fontWeight: FontWeight.w400)),
+            ],
+          ),
+          const Spacer(),
+          if (trailing != null) trailing,
+        ],
+      ),
+    );
+  }
+
   Widget _buildRevenueContent() {
     final tablesVM = context.watch<TablesViewModel>();
     final payments = _getFilteredPayments(tablesVM);
@@ -316,76 +366,68 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     final paymentCount = payments.length;
 
     final dateFormat = DateFormat('dd.MM.yyyy');
+    final subtitle = '${dateFormat.format(range.start)} – ${dateFormat.format(range.end)}';
 
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(Spacing.lg),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Header: Title + Period filter
-          Row(
-            children: [
-              Text('Tržby', style: AppTypography.h2.copyWith(color: AppColors.textPrimary)),
-              const Spacer(),
-              _buildPeriodFilter(),
-            ],
-          ),
-          const SizedBox(height: Spacing.xs),
-          Text(
-            '${dateFormat.format(range.start)} – ${dateFormat.format(range.end)}',
-            style: AppTypography.bodySmall.copyWith(color: AppColors.textTertiary),
-          ),
-          const SizedBox(height: Spacing.lg),
-
-          // 3 Stat cards
-          Row(
-            children: [
-              Expanded(
-                child: _buildRevenueStatCard(
-                  Icons.receipt_long,
-                  'Příjmy s DPH',
-                  CurrencyFormatter.format(totalRevenue),
-                  AppColors.primary,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildPageHeader(title: 'Tržby', subtitle: subtitle, trailing: _buildPeriodFilter()),
+        Expanded(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.fromLTRB(24, 24, 24, 24),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // 3 KPI cards
+                Row(
+                  children: [
+                    Expanded(
+                      child: _buildRevenueStatCard(
+                        Icons.receipt_long_rounded,
+                        'Příjmy s DPH',
+                        CurrencyFormatter.format(totalRevenue),
+                        AppColors.primary,
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: _buildRevenueStatCard(
+                        Icons.person_rounded,
+                        'Průměrná útrata',
+                        CurrencyFormatter.format(avgPerPayment),
+                        AppColors.info,
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: _buildRevenueStatCard(
+                        Icons.groups_rounded,
+                        'Počet plateb',
+                        '$paymentCount',
+                        AppColors.warning,
+                      ),
+                    ),
+                  ],
                 ),
-              ),
-              const SizedBox(width: Spacing.md),
-              Expanded(
-                child: _buildRevenueStatCard(
-                  Icons.person,
-                  'Průměrná útrata na hlavu s DPH',
-                  CurrencyFormatter.format(avgPerPayment),
-                  AppColors.info,
-                ),
-              ),
-              const SizedBox(width: Spacing.md),
-              Expanded(
-                child: _buildRevenueStatCard(
-                  Icons.groups,
-                  'Počet osob',
-                  '$paymentCount',
-                  AppColors.warning,
-                ),
-              ),
-            ],
+                const SizedBox(height: 24),
+                _buildRevenueChart(payments),
+                const SizedBox(height: 24),
+                _buildPaymentBreakdownTable(payments),
+              ],
+            ),
           ),
-          const SizedBox(height: Spacing.xl),
-
-          // Revenue chart
-          _buildRevenueChart(payments),
-          const SizedBox(height: Spacing.xl),
-
-          // Payment breakdown table
-          _buildPaymentBreakdownTable(payments),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
   Widget _buildPeriodFilter() {
     return Container(
+      height: 34,
+      padding: const EdgeInsets.all(3),
       decoration: BoxDecoration(
-        color: AppColors.backgroundTertiary,
-        borderRadius: BorderRadius.circular(CornerRadius.sm),
+        color: const Color(0xFFE5E5EA),
+        borderRadius: BorderRadius.circular(9),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -402,59 +444,54 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     final isActive = _selectedPeriod == period;
     return GestureDetector(
       onTap: () => setState(() => _selectedPeriod = period),
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 150),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 5),
         decoration: BoxDecoration(
-          color: isActive ? AppColors.primary : Colors.transparent,
-          borderRadius: BorderRadius.circular(CornerRadius.sm),
+          color: isActive ? Colors.white : Colors.transparent,
+          borderRadius: BorderRadius.circular(6),
+          boxShadow: isActive
+              ? [BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 4, offset: const Offset(0, 1))]
+              : [],
         ),
         child: Text(
           label,
-          style: AppTypography.labelMedium.copyWith(
-            color: isActive ? Colors.white : AppColors.textSecondary,
+          style: TextStyle(
+            color: isActive ? AppColors.textPrimary : AppColors.textSecondary,
+            fontSize: 13,
+            fontWeight: isActive ? FontWeight.w600 : FontWeight.w400,
           ),
         ),
       ),
     );
   }
 
-  Widget _buildRevenueStatCard(IconData icon, String label, String value, Color iconColor) {
+  Widget _buildRevenueStatCard(IconData icon, String label, String value, Color accentColor) {
     return Container(
-      padding: const EdgeInsets.all(Spacing.md),
+      padding: const EdgeInsets.fromLTRB(18, 18, 18, 16),
       decoration: BoxDecoration(
-        color: AppColors.cardBackground,
-        borderRadius: BorderRadius.circular(CornerRadius.md),
-        border: Border.all(color: AppColors.border),
+        color: _white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border(
+          top: BorderSide(color: accentColor, width: 3),
+          left: BorderSide(color: _border),
+          right: BorderSide(color: _border),
+          bottom: BorderSide(color: _border),
+        ),
       ),
-      child: Row(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            width: 44,
-            height: 44,
-            decoration: BoxDecoration(
-              color: iconColor.withValues(alpha: 0.15),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Icon(icon, color: iconColor, size: 22),
-          ),
-          const SizedBox(width: Spacing.md),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  label,
-                  style: AppTypography.caption.copyWith(color: AppColors.textSecondary),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                const SizedBox(height: Spacing.xxs),
-                Text(
-                  value,
-                  style: AppTypography.h3.copyWith(color: AppColors.textPrimary),
-                ),
-              ],
-            ),
+          Text(value, style: const TextStyle(color: _ink1, fontSize: 24, fontWeight: FontWeight.w700, letterSpacing: -0.5, height: 1.1)),
+          const SizedBox(height: 6),
+          Row(
+            children: [
+              Icon(icon, color: accentColor, size: 13),
+              const SizedBox(width: 5),
+              Expanded(
+                child: Text(label, style: const TextStyle(color: _ink3, fontSize: 11, fontWeight: FontWeight.w500), maxLines: 1, overflow: TextOverflow.ellipsis),
+              ),
+            ],
           ),
         ],
       ),
@@ -774,18 +811,21 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
   Widget _buildOverviewContent() {
     final tablesVM = context.watch<TablesViewModel>();
 
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(Spacing.lg),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text('Aktuální přehled', style: AppTypography.h2.copyWith(color: AppColors.textPrimary)),
-          const SizedBox(height: Spacing.lg),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildPageHeader(title: 'Aktuální přehled'),
+        Expanded(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.fromLTRB(24, 24, 24, 24),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
           Row(
             children: [
               Expanded(
                 child: _buildRevenueStatCard(
-                  Icons.table_bar,
+                  Icons.table_bar_rounded,
                   'Aktivní stoly',
                   '${tablesVM.activeTables.length}',
                   AppColors.primary,
@@ -794,7 +834,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
               const SizedBox(width: Spacing.md),
               Expanded(
                 child: _buildRevenueStatCard(
-                  Icons.receipt_long,
+                  Icons.receipt_long_rounded,
                   'Otevřené tržby',
                   CurrencyFormatter.format(tablesVM.openTabsTotal),
                   AppColors.warning,
@@ -868,8 +908,11 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                 ],
               ),
             )),
-        ],
-      ),
+              ],
+            ),
+          ),
+        ),
+      ],
     );
   }
 
@@ -878,26 +921,21 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
   Widget _buildCategoriesContent() {
     final productsVM = context.watch<ProductsViewModel>();
 
-    return Padding(
-      padding: const EdgeInsets.all(Spacing.lg),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Text('Kategorie', style: AppTypography.h2.copyWith(color: AppColors.textPrimary)),
-              const Spacer(),
-              ElevatedButton.icon(
-                onPressed: () => _showAddCategoryDialog(productsVM),
-                icon: const Icon(Icons.add, size: 18),
-                label: const Text('Přidat kategorii'),
-              ),
-            ],
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildPageHeader(
+          title: 'Kategorie',
+          trailing: ElevatedButton.icon(
+            onPressed: () => _showAddCategoryDialog(productsVM),
+            icon: const Icon(Icons.add, size: 16),
+            label: const Text('Přidat kategorii'),
           ),
-          const SizedBox(height: Spacing.lg),
-          Expanded(
-            child: ListView(
-              children: productsVM.categories.map((cat) => Container(
+        ),
+        Expanded(
+          child: ListView(
+            padding: const EdgeInsets.fromLTRB(24, 20, 24, 24),
+            children: productsVM.categories.map((cat) => Container(
                 margin: const EdgeInsets.only(bottom: Spacing.sm),
                 padding: const EdgeInsets.all(Spacing.md),
                 decoration: BoxDecoration(
@@ -933,10 +971,9 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                   ],
                 ),
               )).toList(),
-            ),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
@@ -960,51 +997,57 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
           );
     final products = selectedCat != null ? productsVM.getProductsByCategory(selectedCat.id) : <Product>[];
 
-    return Padding(
-      padding: const EdgeInsets.all(Spacing.lg),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Text('Produkty', style: AppTypography.h2.copyWith(color: AppColors.textPrimary)),
-              const Spacer(),
-              ElevatedButton.icon(
-                onPressed: () => _showProductFormDialog(productsVM),
-                icon: const Icon(Icons.add, size: 18),
-                label: const Text('Přidat produkt'),
-              ),
-            ],
-          ),
-          const SizedBox(height: Spacing.md),
-          // Category dropdown
-          if (categories.isNotEmpty)
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: Spacing.md, vertical: 4),
-              decoration: BoxDecoration(
-                color: AppColors.primary.withValues(alpha: 0.10),
-                borderRadius: BorderRadius.circular(CornerRadius.md),
-                border: Border.all(color: AppColors.primary.withValues(alpha: 0.3)),
-              ),
-              child: DropdownButton<String>(
-                value: _selectedCategoryId,
-                isExpanded: true,
-                dropdownColor: AppColors.cardBackground,
-                underline: const SizedBox(),
-                icon: const Icon(Icons.keyboard_arrow_down, color: AppColors.primary),
-                style: AppTypography.bodyLarge.copyWith(color: AppColors.textPrimary),
-                items: categories.map((cat) => DropdownMenuItem(
-                  value: cat.id,
-                  child: Text('${cat.emoji}  ${cat.title}'),
-                )).toList(),
-                onChanged: (value) {
-                  if (value != null) setState(() => _selectedCategoryId = value);
-                },
-              ),
+    // Category tabs above product list
+    final categoryTabs = categories.isEmpty
+        ? const SizedBox.shrink()
+        : SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.fromLTRB(24, 16, 24, 0),
+            child: Row(
+              children: categories.map((cat) {
+                final isSelected = cat.id == _selectedCategoryId;
+                return GestureDetector(
+                  onTap: () => setState(() => _selectedCategoryId = cat.id),
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 150),
+                    margin: const EdgeInsets.only(right: 8),
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+                    decoration: BoxDecoration(
+                      color: isSelected ? AppColors.primary : AppColors.cardBackground,
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(
+                        color: isSelected ? AppColors.primary : AppColors.border,
+                      ),
+                    ),
+                    child: Text(
+                      '${cat.emoji}  ${cat.title}',
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+                        color: isSelected ? Colors.white : AppColors.textPrimary,
+                      ),
+                    ),
+                  ),
+                );
+              }).toList(),
             ),
-          const SizedBox(height: Spacing.xl),
-          // Products list for selected category
-          Expanded(
+          );
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildPageHeader(
+          title: 'Produkty',
+          trailing: ElevatedButton.icon(
+            onPressed: () => _showProductFormDialog(productsVM),
+            icon: const Icon(Icons.add, size: 16),
+            label: const Text('Přidat produkt'),
+          ),
+        ),
+        categoryTabs,
+        const SizedBox(height: 8),
+        // Products list for selected category
+        Expanded(
             child: products.isEmpty
                 ? Align(
                     alignment: Alignment.topCenter,
@@ -1076,9 +1119,8 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                       ),
                     )).toList(),
                   ),
-          ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
@@ -1088,24 +1130,16 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     final tablesVM = context.watch<TablesViewModel>();
     final payments = tablesVM.paymentHistory;
 
-    return Padding(
-      padding: const EdgeInsets.all(Spacing.lg),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text('Historie plateb', style: AppTypography.h2.copyWith(color: AppColors.textPrimary)),
-          const SizedBox(height: Spacing.lg),
-          Expanded(
-            child: payments.isEmpty
-                ? Align(
-                    alignment: Alignment.topCenter,
-                    child: Padding(
-                      padding: const EdgeInsets.only(top: Spacing.xxl),
-                      child: Text('Žádné platby', style: AppTypography.bodyLarge.copyWith(color: AppColors.textSecondary)),
-                    ),
-                  )
-                : ListView(
-                    children: payments.reversed.map((payment) => Container(
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildPageHeader(title: 'Historie plateb'),
+        Expanded(
+          child: payments.isEmpty
+              ? const Center(child: Text('Žádné platby'))
+              : ListView(
+                  padding: const EdgeInsets.fromLTRB(24, 20, 24, 24),
+                  children: payments.reversed.map((payment) => Container(
                       margin: const EdgeInsets.only(bottom: Spacing.sm),
                       padding: const EdgeInsets.all(Spacing.md),
                       decoration: BoxDecoration(
@@ -1153,10 +1187,9 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                         ],
                       ),
                     )).toList(),
-                  ),
-          ),
-        ],
-      ),
+                ),
+        ),
+      ],
     );
   }
 
@@ -1165,34 +1198,23 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
   Widget _buildStaffContent() {
     final auth = context.watch<AuthViewModel>();
 
-    return Padding(
-      padding: const EdgeInsets.all(Spacing.lg),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Text('Personál', style: AppTypography.h2.copyWith(color: AppColors.textPrimary)),
-              const Spacer(),
-              ElevatedButton.icon(
-                onPressed: () => _showAddStaffDialog(auth),
-                icon: const Icon(Icons.add, size: 18),
-                label: const Text('Přidat člena'),
-              ),
-            ],
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildPageHeader(
+          title: 'Personál',
+          trailing: ElevatedButton.icon(
+            onPressed: () => _showAddStaffDialog(auth),
+            icon: const Icon(Icons.add, size: 16),
+            label: const Text('Přidat člena'),
           ),
-          const SizedBox(height: Spacing.lg),
-          Expanded(
-            child: auth.staff.isEmpty
-                ? Align(
-                    alignment: Alignment.topCenter,
-                    child: Padding(
-                      padding: const EdgeInsets.only(top: Spacing.xxl),
-                      child: Text('Žádný personál', style: AppTypography.bodyLarge.copyWith(color: AppColors.textSecondary)),
-                    ),
-                  )
-                : ListView(
-                    children: auth.staff.map((member) {
+        ),
+        Expanded(
+          child: auth.staff.isEmpty
+              ? const Center(child: Text('Žádný personál'))
+              : ListView(
+                  padding: const EdgeInsets.fromLTRB(24, 20, 24, 24),
+                  children: auth.staff.map((member) {
                       final role = auth.getRoleById(member.roleId);
                       return Container(
                         margin: const EdgeInsets.only(bottom: Spacing.sm),
@@ -1268,10 +1290,9 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                         ),
                       );
                     }).toList(),
-                  ),
-          ),
-        ],
-      ),
+                ),
+        ),
+      ],
     );
   }
 
@@ -1280,34 +1301,23 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
   Widget _buildRolesContent() {
     final auth = context.watch<AuthViewModel>();
 
-    return Padding(
-      padding: const EdgeInsets.all(Spacing.lg),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Text('Role', style: AppTypography.h2.copyWith(color: AppColors.textPrimary)),
-              const Spacer(),
-              ElevatedButton.icon(
-                onPressed: () => _showAddRoleDialog(auth),
-                icon: const Icon(Icons.add, size: 18),
-                label: const Text('Přidat roli'),
-              ),
-            ],
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildPageHeader(
+          title: 'Role',
+          trailing: ElevatedButton.icon(
+            onPressed: () => _showAddRoleDialog(auth),
+            icon: const Icon(Icons.add, size: 16),
+            label: const Text('Přidat roli'),
           ),
-          const SizedBox(height: Spacing.lg),
-          Expanded(
-            child: auth.roles.isEmpty
-                ? Align(
-                    alignment: Alignment.topCenter,
-                    child: Padding(
-                      padding: const EdgeInsets.only(top: Spacing.xxl),
-                      child: Text('Žádné role', style: AppTypography.bodyLarge.copyWith(color: AppColors.textSecondary)),
-                    ),
-                  )
-                : ListView(
-                    children: auth.roles.map((role) {
+        ),
+        Expanded(
+          child: auth.roles.isEmpty
+              ? const Center(child: Text('Žádné role'))
+              : ListView(
+                  padding: const EdgeInsets.fromLTRB(24, 20, 24, 24),
+                  children: auth.roles.map((role) {
                       final memberCount = auth.staff.where((s) => s.roleId == role.id).length;
                       return Container(
                         margin: const EdgeInsets.only(bottom: Spacing.sm),
@@ -1391,10 +1401,9 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                         ),
                       );
                     }).toList(),
-                  ),
-          ),
-        ],
-      ),
+                ),
+        ),
+      ],
     );
   }
 
@@ -1403,13 +1412,16 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
   Widget _buildPrinterContent() {
     final printer = context.watch<PrinterService>();
 
-    return Padding(
-      padding: const EdgeInsets.all(Spacing.lg),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text('Tiskárna', style: AppTypography.h2.copyWith(color: AppColors.textPrimary)),
-          const SizedBox(height: Spacing.lg),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _buildPageHeader(title: 'Tiskárna'),
+        Expanded(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.fromLTRB(24, 24, 24, 24),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
 
           // Connection status card
           Container(
@@ -1498,8 +1510,11 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
               ),
             ),
           ],
-        ],
-      ),
+              ],
+            ),
+          ),
+        ),
+      ],
     );
   }
 

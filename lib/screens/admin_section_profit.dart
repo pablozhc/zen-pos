@@ -35,95 +35,98 @@ class AdminSectionProfit extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(Spacing.lg),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Page header
+        Container(
+          padding: const EdgeInsets.fromLTRB(28, 0, 24, 0),
+          height: 60,
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            border: Border(bottom: BorderSide(color: Color(0xFFE5E5EA))),
+          ),
+          child: Row(
             children: [
-              Text('Zisk', style: AppTypography.h2.copyWith(color: AppColors.textPrimary)),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Text('Zisk',
+                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700, color: Color(0xFF1C1C1E), letterSpacing: -0.3)),
+                  Text(dateRangeLabel,
+                      style: const TextStyle(fontSize: 12, color: Color(0xFF8E8E93))),
+                ],
+              ),
               const Spacer(),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 decoration: BoxDecoration(
-                  color: AppColors.backgroundTertiary,
-                  borderRadius: BorderRadius.circular(8),
+                  color: const Color(0xFFE5E5EA),
+                  borderRadius: BorderRadius.circular(7),
                 ),
                 child: Text(periodLabel,
-                    style: AppTypography.labelMedium
-                        .copyWith(color: AppColors.textSecondary)),
+                    style: const TextStyle(fontSize: 13, color: Color(0xFF1C1C1E), fontWeight: FontWeight.w500)),
               ),
             ],
           ),
-          const SizedBox(height: 4),
-          Text(dateRangeLabel,
-              style: AppTypography.bodySmall
-                  .copyWith(color: AppColors.textTertiary)),
-          const SizedBox(height: Spacing.lg),
-          Row(
-            children: [
-              Expanded(
-                  child: _statCard(Icons.trending_up, 'Zisk s DPH',
-                      CurrencyFormatter.format(_grossProfit), AppColors.success)),
-              const SizedBox(width: Spacing.md),
-              Expanded(
-                  child: _statCard(Icons.percent, 'Marže',
-                      '${_margin.toStringAsFixed(1)}%', AppColors.info)),
-              const SizedBox(width: Spacing.md),
-              Expanded(
-                  child: _statCard(Icons.receipt_long, 'Tržby s DPH',
-                      CurrencyFormatter.format(_totalRevenue), AppColors.primary)),
-              const SizedBox(width: Spacing.md),
-              Expanded(
-                  child: _statCard(Icons.shopping_cart, 'Náklady s DPH',
-                      CurrencyFormatter.format(_estimatedCost), AppColors.error)),
-            ],
-          ),
-          const SizedBox(height: Spacing.xl),
-          _buildBreakdownCard(),
-          const SizedBox(height: Spacing.lg),
-          _buildPaymentMethodBreakdown(),
-        ],
-      ),
-    );
-  }
-
-  Widget _statCard(IconData icon, String label, String value, Color color) {
-    return Container(
-      padding: const EdgeInsets.all(Spacing.md),
-      decoration: BoxDecoration(
-        color: AppColors.cardBackground,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.border),
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 44,
-            height: 44,
-            decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.15),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Icon(icon, color: color, size: 22),
-          ),
-          const SizedBox(width: Spacing.md),
-          Expanded(
+        ),
+        Expanded(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.fromLTRB(24, 24, 24, 24),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(label,
-                    style: AppTypography.caption
-                        .copyWith(color: AppColors.textSecondary),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis),
-                const SizedBox(height: 4),
-                Text(value,
-                    style:
-                        AppTypography.h3.copyWith(color: AppColors.textPrimary)),
+                Row(
+                  children: [
+                    Expanded(child: _statCard(Icons.trending_up_rounded, 'Zisk s DPH', CurrencyFormatter.format(_grossProfit), AppColors.success)),
+                    const SizedBox(width: 16),
+                    Expanded(child: _statCard(Icons.percent_rounded, 'Marže', '${_margin.toStringAsFixed(1)}%', AppColors.info)),
+                    const SizedBox(width: 16),
+                    Expanded(child: _statCard(Icons.receipt_long_rounded, 'Tržby s DPH', CurrencyFormatter.format(_totalRevenue), AppColors.primary)),
+                    const SizedBox(width: 16),
+                    Expanded(child: _statCard(Icons.shopping_cart_rounded, 'Náklady s DPH', CurrencyFormatter.format(_estimatedCost), AppColors.error)),
+                  ],
+                ),
+                const SizedBox(height: 24),
+                _buildBreakdownCard(),
+                const SizedBox(height: 16),
+                _buildPaymentMethodBreakdown(),
               ],
             ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _statCard(IconData icon, String label, String value, Color accentColor) {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(20, 20, 20, 18),
+      decoration: BoxDecoration(
+        color: AppColors.cardBackground,
+        borderRadius: BorderRadius.circular(12),
+        border: Border(top: BorderSide(color: accentColor, width: 3)),
+        boxShadow: [
+          BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 8, offset: const Offset(0, 2)),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(value,
+              style: const TextStyle(fontSize: 26, fontWeight: FontWeight.w700, letterSpacing: -0.5, height: 1.1, color: Color(0xFF1C1C1E))),
+          const SizedBox(height: 6),
+          Row(
+            children: [
+              Icon(icon, color: accentColor, size: 14),
+              const SizedBox(width: 5),
+              Expanded(
+                child: Text(label,
+                    style: const TextStyle(fontSize: 12, color: Color(0xFF6C6C70), fontWeight: FontWeight.w500),
+                    maxLines: 1, overflow: TextOverflow.ellipsis),
+              ),
+            ],
           ),
         ],
       ),

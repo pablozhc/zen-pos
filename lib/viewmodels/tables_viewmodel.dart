@@ -5,6 +5,7 @@ import '../models/table_model.dart';
 import '../models/order_model.dart';
 import '../models/product_model.dart';
 import '../models/payment_model.dart';
+import '../models/addon_model.dart';
 import '../services/firestore_service.dart';
 
 class TablesViewModel extends ChangeNotifier {
@@ -165,11 +166,11 @@ class TablesViewModel extends ChangeNotifier {
     }
   }
 
-  void addProductToTable(int tableNumber, Product product) {
+  void addProductToTable(int tableNumber, Product product,
+      {List<SelectedAddon>? addons, String? note}) {
     final table = getTableByNumber(tableNumber);
     if (table == null) return;
 
-    // If table has no order, create one
     if (table.currentOrder == null) {
       table.currentOrder = Order(
         id: const Uuid().v4(),
@@ -180,13 +181,13 @@ class TablesViewModel extends ChangeNotifier {
       table.status = TableStatus.occupied;
     }
 
-    // Check if product already exists in order
-    final existingItemIndex = table.currentOrder!.items.indexWhere(
-      (item) => item.product.id == product.id,
+    // Only merge if no addons/note (otherwise always new line)
+    final hasCustomization = (addons != null && addons.isNotEmpty) || note != null;
+    final existingItemIndex = hasCustomization ? -1 : table.currentOrder!.items.indexWhere(
+      (item) => item.product.id == product.id && !item.isStorno && item.selectedAddons.isEmpty && item.note == null,
     );
 
     if (existingItemIndex != -1) {
-      // Increment quantity
       final existingItem = table.currentOrder!.items[existingItemIndex];
       table.currentOrder!.items[existingItemIndex] = OrderItem(
         id: existingItem.id,
@@ -196,15 +197,14 @@ class TablesViewModel extends ChangeNotifier {
         timestamp: existingItem.timestamp,
       );
     } else {
-      // Add new item
-      table.currentOrder!.items.add(
-        OrderItem(
-          id: const Uuid().v4(),
-          product: product,
-          quantity: 1,
-          timestamp: DateTime.now(),
-        ),
-      );
+      table.currentOrder!.items.add(OrderItem(
+        id: const Uuid().v4(),
+        product: product,
+        quantity: 1,
+        timestamp: DateTime.now(),
+        selectedAddons: addons ?? [],
+        note: note,
+      ));
     }
 
     notifyListeners();
