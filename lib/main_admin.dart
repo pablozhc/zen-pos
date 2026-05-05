@@ -49,30 +49,23 @@ class ZenPOSAdmin extends StatelessWidget {
                 surface: const Color(0xFFFFFFFF),
                 error: AppColors.error,
               ),
-              scaffoldBackgroundColor: const Color(0xFFF2F2F7),
+              scaffoldBackgroundColor: const Color(0xFFFAF8F5),
               cardTheme: CardThemeData(
                 color: Colors.white,
                 elevation: 0,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  side: const BorderSide(color: Color(0xFFE5E5EA), width: 1),
-                ),
+                shadowColor: Colors.transparent,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
               ),
               appBarTheme: AppBarTheme(
                 backgroundColor: Colors.white,
                 elevation: 0,
                 surfaceTintColor: Colors.transparent,
-                titleTextStyle: GoogleFonts.inter(
-                  color: const Color(0xFF1C1C1E),
-                  fontSize: 17,
-                  fontWeight: FontWeight.w600,
-                ),
-                iconTheme:
-                    const IconThemeData(color: Color(0xFF1C1C1E)),
+                titleTextStyle: GoogleFonts.inter(color: const Color(0xFF1A0F0A), fontSize: 17, fontWeight: FontWeight.w600),
+                iconTheme: const IconThemeData(color: Color(0xFF1A0F0A)),
               ),
               dividerTheme: const DividerThemeData(
-                color: Color(0xFFE5E5EA),
-                thickness: 1,
+                color: Color(0xFFEDE9E3),
+                thickness: 0.5,
                 space: 1,
               ),
               elevatedButtonTheme: ElevatedButtonThemeData(
@@ -80,22 +73,17 @@ class ZenPOSAdmin extends StatelessWidget {
                   backgroundColor: AppColors.primary,
                   foregroundColor: Colors.white,
                   elevation: 0,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  textStyle: GoogleFonts.inter(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                  ),
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                  textStyle: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w600),
                 ),
               ),
               outlinedButtonTheme: OutlinedButtonThemeData(
                 style: OutlinedButton.styleFrom(
                   foregroundColor: AppColors.primary,
-                  side: const BorderSide(color: Color(0xFFE5E5EA)),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                  side: BorderSide(color: const Color(0xFFEDE9E3)),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                 ),
               ),
               textButtonTheme: TextButtonThemeData(
@@ -106,77 +94,48 @@ class ZenPOSAdmin extends StatelessWidget {
               ),
               inputDecorationTheme: InputDecorationTheme(
                 filled: true,
-                fillColor: const Color(0xFFF2F2F7),
-                contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 14, vertical: 10),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  borderSide: BorderSide.none,
-                ),
-                enabledBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  borderSide: BorderSide.none,
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  borderSide: const BorderSide(
-                      color: AppColors.primary, width: 1.5),
-                ),
-                hintStyle: GoogleFonts.inter(
-                    color: const Color(0xFF8E8E93), fontSize: 15),
+                fillColor: const Color(0xFFF3F0EB),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none),
+                enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: BorderSide.none),
+                focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10), borderSide: const BorderSide(color: AppColors.primary, width: 1.5)),
+                hintStyle: GoogleFonts.inter(color: const Color(0xFF9A8F85), fontSize: 15),
                 isDense: true,
               ),
               dialogTheme: DialogThemeData(
                 backgroundColor: Colors.white,
                 surfaceTintColor: Colors.transparent,
-                elevation: 8,
-                shadowColor: Colors.black12,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(14),
-                ),
-                titleTextStyle: GoogleFonts.inter(
-                  fontSize: 17,
-                  fontWeight: FontWeight.w600,
-                  color: const Color(0xFF1C1C1E),
-                ),
+                elevation: 24,
+                shadowColor: Colors.black.withValues(alpha: 0.15),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+                titleTextStyle: GoogleFonts.inter(fontSize: 17, fontWeight: FontWeight.w700, color: const Color(0xFF1A0F0A)),
               ),
               snackBarTheme: SnackBarThemeData(
-                backgroundColor: const Color(0xFF1C1C1E),
-                contentTextStyle: GoogleFonts.inter(
-                    color: Colors.white, fontSize: 14),
+                backgroundColor: const Color(0xFF1A0F0A),
+                contentTextStyle: GoogleFonts.inter(color: Colors.white, fontSize: 14),
                 behavior: SnackBarBehavior.floating,
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10)),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               ),
               tabBarTheme: TabBarThemeData(
                 labelColor: AppColors.primary,
-                unselectedLabelColor: const Color(0xFF8E8E93),
+                unselectedLabelColor: const Color(0xFF9A8F85),
                 indicatorColor: AppColors.primary,
                 indicatorSize: TabBarIndicatorSize.tab,
-                labelStyle: GoogleFonts.inter(
-                    fontSize: 14, fontWeight: FontWeight.w600),
-                unselectedLabelStyle:
-                    GoogleFonts.inter(fontSize: 14),
-                dividerColor: const Color(0xFFE5E5EA),
+                labelStyle: GoogleFonts.inter(fontSize: 14, fontWeight: FontWeight.w600),
+                unselectedLabelStyle: GoogleFonts.inter(fontSize: 14),
+                dividerColor: const Color(0xFFEDE9E3),
               ),
               chipTheme: ChipThemeData(
-                backgroundColor: const Color(0xFFF2F2F7),
-                selectedColor:
-                    AppColors.primary.withValues(alpha: 0.15),
+                backgroundColor: const Color(0xFFF3F0EB),
+                selectedColor: AppColors.primary.withValues(alpha: 0.15),
                 labelStyle: GoogleFonts.inter(fontSize: 13),
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8)),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(999)),
                 side: BorderSide.none,
               ),
               switchTheme: SwitchThemeData(
-                thumbColor: WidgetStateProperty.resolveWith((states) =>
-                    states.contains(WidgetState.selected)
-                        ? Colors.white
-                        : Colors.white),
+                thumbColor: WidgetStateProperty.all(Colors.white),
                 trackColor: WidgetStateProperty.resolveWith((states) =>
-                    states.contains(WidgetState.selected)
-                        ? AppColors.primary
-                        : const Color(0xFFE5E5EA)),
+                    states.contains(WidgetState.selected) ? AppColors.primary : const Color(0xFFDDD8D0)),
               ),
             ),
             home: const AdminLoginScreen(),

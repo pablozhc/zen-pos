@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart' hide TimeOfDay;
+﻿import 'package:flutter/material.dart' hide TimeOfDay;
 import 'package:flutter/material.dart' as material show TimeOfDay;
 import 'package:uuid/uuid.dart';
 import '../models/happy_hour_model.dart';
@@ -396,4 +396,5 @@ class AdminSectionHappyHours extends StatelessWidget {
     );
   }
 }
+
 

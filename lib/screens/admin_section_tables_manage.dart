@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 
 import '../models/table_model.dart';
 import '../services/firestore_service.dart';
@@ -215,3 +215,4 @@ class AdminSectionTablesManage extends StatelessWidget {
     );
   }
 }
+

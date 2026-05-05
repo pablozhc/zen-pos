@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:uuid/uuid.dart';
 import '../models/stock_model.dart';
@@ -896,3 +896,4 @@ class _AdminSectionStockState extends State<AdminSectionStock>
     );
   }
 }
+

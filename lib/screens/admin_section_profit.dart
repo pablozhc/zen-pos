@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+﻿import 'package:flutter/material.dart';
 
 import '../models/payment_model.dart';
 import '../theme/app_colors.dart';
@@ -40,12 +40,9 @@ class AdminSectionProfit extends StatelessWidget {
       children: [
         // Page header
         Container(
-          padding: const EdgeInsets.fromLTRB(28, 0, 24, 0),
-          height: 60,
-          decoration: const BoxDecoration(
-            color: Colors.white,
-            border: Border(bottom: BorderSide(color: Color(0xFFE5E5EA))),
-          ),
+          padding: const EdgeInsets.fromLTRB(24, 0, 20, 0),
+          height: 56,
+          color: const Color(0xFFFAF8F5),
           child: Row(
             children: [
               Column(
@@ -102,33 +99,47 @@ class AdminSectionProfit extends StatelessWidget {
   Widget _statCard(IconData icon, String label, String value, Color accentColor) {
     return Container(
       width: 240,
-      padding: const EdgeInsets.fromLTRB(20, 20, 20, 18),
       decoration: BoxDecoration(
         color: AppColors.cardBackground,
-        borderRadius: BorderRadius.circular(12),
-        border: Border(top: BorderSide(color: accentColor, width: 3)),
+        borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 8, offset: const Offset(0, 2)),
+          BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 1),
         ],
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(value,
-              style: const TextStyle(fontSize: 26, fontWeight: FontWeight.w700, letterSpacing: -0.5, height: 1.1, color: Color(0xFF1C1C1E))),
-          const SizedBox(height: 6),
-          Row(
-            children: [
-              Icon(icon, color: accentColor, size: 14),
-              const SizedBox(width: 5),
-              Expanded(
-                child: Text(label,
-                    style: const TextStyle(fontSize: 12, color: Color(0xFF6C6C70), fontWeight: FontWeight.w500),
-                    maxLines: 1, overflow: TextOverflow.ellipsis),
+      child: IntrinsicHeight(
+        child: Row(
+          children: [
+            Container(
+              width: 4,
+              decoration: BoxDecoration(
+                color: accentColor,
+                borderRadius: const BorderRadius.only(topLeft: Radius.circular(16), bottomLeft: Radius.circular(16)),
               ),
-            ],
-          ),
-        ],
+            ),
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(14, 16, 16, 14),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(value, style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w700, letterSpacing: -0.5, height: 1.1, color: Color(0xFF1A0F0A))),
+                    const SizedBox(height: 5),
+                    Row(
+                      children: [
+                        Icon(icon, color: accentColor, size: 12),
+                        const SizedBox(width: 5),
+                        Expanded(
+                          child: Text(label, style: const TextStyle(fontSize: 11, color: Color(0xFF9A8F85), fontWeight: FontWeight.w500), maxLines: 1, overflow: TextOverflow.ellipsis),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -138,8 +149,8 @@ class AdminSectionProfit extends StatelessWidget {
       padding: const EdgeInsets.all(Spacing.md),
       decoration: BoxDecoration(
         color: AppColors.cardBackground,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.border),
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 8, offset: const Offset(0, 2))],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -176,8 +187,8 @@ class AdminSectionProfit extends StatelessWidget {
       padding: const EdgeInsets.all(Spacing.md),
       decoration: BoxDecoration(
         color: AppColors.cardBackground,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.border),
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 8, offset: const Offset(0, 2))],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -260,3 +271,4 @@ class AdminSectionProfit extends StatelessWidget {
                 fontWeight: bold ? FontWeight.w600 : null)),
       );
 }
+
