@@ -4,6 +4,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'firebase_options.dart';
 import 'screens/admin_login_screen.dart';
+import 'screens/landing_screen.dart';
 import 'theme/app_colors.dart';
 import 'viewmodels/tables_viewmodel.dart';
 import 'viewmodels/products_viewmodel.dart';
@@ -138,7 +139,16 @@ class ZenPOSAdmin extends StatelessWidget {
                     states.contains(WidgetState.selected) ? AppColors.primary : const Color(0xFFDDD8D0)),
               ),
             ),
-            home: const AdminLoginScreen(),
+            home: Builder(
+              builder: (context) => LandingScreen(
+                onLogin: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(builder: (_) => const AdminLoginScreen()),
+                  );
+                },
+                onWaitlist: () {},
+              ),
+            ),
           );
         },
       ),
