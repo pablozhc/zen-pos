@@ -4,9 +4,8 @@ import 'package:uuid/uuid.dart';
 import '../models/stock_model.dart';
 import '../services/firestore_service.dart';
 import '../theme/app_colors.dart';
-import '../theme/app_typography.dart';
-import '../theme/app_spacing.dart';
 import '../utils/currency_formatter.dart';
+import 'admin_widgets.dart';
 
 class AdminSectionStock extends StatefulWidget {
   const AdminSectionStock({super.key});
@@ -34,46 +33,39 @@ class _AdminSectionStockState extends State<AdminSectionStock>
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Container(
-          color: AppColors.background,
-          padding: const EdgeInsets.fromLTRB(
-              Spacing.lg, Spacing.lg, Spacing.lg, 0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('Sklad',
-                  style: AppTypography.h2
-                      .copyWith(color: AppColors.textPrimary)),
-              const SizedBox(height: Spacing.sm),
-              TabBar(
-                controller: _tabs,
-                isScrollable: true,
-                tabs: const [
-                  Tab(text: 'Skladové karty'),
-                  Tab(text: 'Naskladnění'),
-                  Tab(text: 'Inventury'),
-                  Tab(text: 'Odpisy'),
-                  Tab(text: 'Dodavatelé'),
-                ],
-              ),
-            ],
+    return Expanded(
+      child: Column(
+        children: [
+          Container(
+            color: AT.bg,
+            padding: const EdgeInsets.fromLTRB(AT.pagePad, AT.pagePad, AT.pagePad, 0),
+            child: TabBar(
+              controller: _tabs,
+              isScrollable: true,
+              tabAlignment: TabAlignment.start,
+              tabs: const [
+                Tab(text: 'Skladové karty'),
+                Tab(text: 'Naskladnění'),
+                Tab(text: 'Inventury'),
+                Tab(text: 'Odpisy'),
+                Tab(text: 'Dodavatelé'),
+              ],
+            ),
           ),
-        ),
-        Expanded(
-          child: TabBarView(
-            controller: _tabs,
-            children: [
-              _buildStockItemsTab(),
-              _buildReceivingTab(),
-              _buildInventoriesTab(),
-              _buildWriteOffsTab(),
-              _buildSuppliersTab(),
-            ],
+          Expanded(
+            child: TabBarView(
+              controller: _tabs,
+              children: [
+                _buildStockItemsTab(),
+                _buildReceivingTab(),
+                _buildInventoriesTab(),
+                _buildWriteOffsTab(),
+                _buildSuppliersTab(),
+              ],
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
@@ -87,12 +79,12 @@ class _AdminSectionStockState extends State<AdminSectionStock>
         return Column(
           children: [
             Padding(
-              padding: const EdgeInsets.all(Spacing.md),
+              padding: const EdgeInsets.all(AT.rowPadH),
               child: Row(
                 children: [
                   Text('${items.length} karet',
-                      style: AppTypography.bodySmall
-                          .copyWith(color: AppColors.textSecondary)),
+                      style: AT.rowSub
+                          .copyWith(color: AT.ink2)),
                   const Spacer(),
                   ElevatedButton.icon(
                     onPressed: () => _showStockItemDialog(context, null),
@@ -108,10 +100,10 @@ class _AdminSectionStockState extends State<AdminSectionStock>
                       () => _showStockItemDialog(context, null))
                   : ListView.separated(
                       padding: const EdgeInsets.symmetric(
-                          horizontal: Spacing.md),
+                          horizontal: AT.pagePad),
                       itemCount: items.length,
                       separatorBuilder: (_, __) =>
-                          Divider(height: 1, color: AppColors.divider),
+                          Divider(height: 1, color: AT.border),
                       itemBuilder: (_, i) =>
                           _stockItemRow(context, items[i]),
                     ),
@@ -131,33 +123,32 @@ class _AdminSectionStockState extends State<AdminSectionStock>
         decoration: BoxDecoration(
           color: isLow
               ? AppColors.error.withValues(alpha: 0.12)
-              : AppColors.backgroundTertiary,
+              : AT.bgWarm,
           borderRadius: BorderRadius.circular(8),
         ),
         child: Icon(
           isLow ? Icons.warning_amber : Icons.inventory_2,
-          color: isLow ? AppColors.error : AppColors.textSecondary,
+          color: isLow ? AppColors.error : AT.ink2,
           size: 20,
         ),
       ),
       title: Text(item.name,
-          style: AppTypography.labelMedium
-              .copyWith(color: AppColors.textPrimary)),
+          style: AT.rowTitle
+              .copyWith(color: AT.ink1)),
       subtitle: Text(
           '${item.currentStock.toStringAsFixed(1)} ${item.unit.label}'
           '${item.minStock != null ? ' (min: ${item.minStock!.toStringAsFixed(1)})' : ''}',
-          style: AppTypography.caption.copyWith(
-              color: isLow ? AppColors.error : AppColors.textSecondary)),
+          style: AT.sectionLabel.copyWith(color: isLow ? AppColors.error : AT.ink2)),
       trailing: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           if (item.costPrice > 0)
             Text(CurrencyFormatter.format(item.costPrice),
-                style: AppTypography.bodySmall
-                    .copyWith(color: AppColors.textSecondary)),
-          const SizedBox(width: Spacing.sm),
+                style: AT.rowSub
+                    .copyWith(color: AT.ink2)),
+          const SizedBox(width: 8),
           IconButton(
-            icon: Icon(Icons.edit, size: 18, color: AppColors.textSecondary),
+            icon: Icon(Icons.edit, size: 18, color: AT.ink2),
             onPressed: () => _showStockItemDialog(context, item),
           ),
           IconButton(
@@ -193,7 +184,7 @@ class _AdminSectionStockState extends State<AdminSectionStock>
                   controller: nameCtrl,
                   decoration: const InputDecoration(labelText: 'Název'),
                 ),
-                const SizedBox(height: Spacing.sm),
+                const SizedBox(height: 8),
                 DropdownButtonFormField<StockUnit>(
                   value: unit,
                   decoration: const InputDecoration(labelText: 'Jednotka'),
@@ -203,7 +194,7 @@ class _AdminSectionStockState extends State<AdminSectionStock>
                       .toList(),
                   onChanged: (v) => setS(() => unit = v!),
                 ),
-                const SizedBox(height: Spacing.sm),
+                const SizedBox(height: 8),
                 TextField(
                   controller: costCtrl,
                   keyboardType:
@@ -212,7 +203,7 @@ class _AdminSectionStockState extends State<AdminSectionStock>
                       labelText: 'Nákupní cena / jednotka',
                       suffixText: 'Kč'),
                 ),
-                const SizedBox(height: Spacing.sm),
+                const SizedBox(height: 8),
                 TextField(
                   controller: minCtrl,
                   keyboardType:
@@ -289,12 +280,12 @@ class _AdminSectionStockState extends State<AdminSectionStock>
         return Column(
           children: [
             Padding(
-              padding: const EdgeInsets.all(Spacing.md),
+              padding: const EdgeInsets.all(AT.rowPadH),
               child: Row(
                 children: [
                   Text('${txs.length} naskladnění',
-                      style: AppTypography.bodySmall
-                          .copyWith(color: AppColors.textSecondary)),
+                      style: AT.rowSub
+                          .copyWith(color: AT.ink2)),
                   const Spacer(),
                   ElevatedButton.icon(
                     onPressed: () =>
@@ -332,12 +323,12 @@ class _AdminSectionStockState extends State<AdminSectionStock>
         return Column(
           children: [
             Padding(
-              padding: const EdgeInsets.all(Spacing.md),
+              padding: const EdgeInsets.all(AT.rowPadH),
               child: Row(
                 children: [
                   Text('${txs.length} odpisů',
-                      style: AppTypography.bodySmall
-                          .copyWith(color: AppColors.textSecondary)),
+                      style: AT.rowSub
+                          .copyWith(color: AT.ink2)),
                   const Spacer(),
                   ElevatedButton.icon(
                     onPressed: () => _showTransactionDialog(
@@ -366,9 +357,9 @@ class _AdminSectionStockState extends State<AdminSectionStock>
   Widget _transactionList(List<StockTransaction> txs) {
     final df = DateFormat('dd.MM.yyyy HH:mm');
     return ListView.separated(
-      padding: const EdgeInsets.symmetric(horizontal: Spacing.md),
+      padding: const EdgeInsets.symmetric(horizontal: AT.pagePad),
       itemCount: txs.length,
-      separatorBuilder: (_, __) => Divider(height: 1, color: AppColors.divider),
+      separatorBuilder: (_, __) => Divider(height: 1, color: AT.border),
       itemBuilder: (_, i) {
         final tx = txs[i];
         final isIn = tx.type == StockTransactionType.receiving ||
@@ -379,24 +370,24 @@ class _AdminSectionStockState extends State<AdminSectionStock>
             color: isIn ? AppColors.success : AppColors.error,
           ),
           title: Text(tx.stockItemName,
-              style: AppTypography.labelMedium
-                  .copyWith(color: AppColors.textPrimary)),
+              style: AT.rowTitle
+                  .copyWith(color: AT.ink1)),
           subtitle: Text(df.format(tx.createdAt),
-              style: AppTypography.caption
-                  .copyWith(color: AppColors.textSecondary)),
+              style: AT.sectionLabel
+                  .copyWith(color: AT.ink2)),
           trailing: Column(
             crossAxisAlignment: CrossAxisAlignment.end,
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Text(
                 '${isIn ? '+' : '-'}${tx.quantity}',
-                style: AppTypography.labelMedium
+                style: AT.rowTitle
                     .copyWith(color: isIn ? AppColors.success : AppColors.error),
               ),
               if (tx.totalValue > 0)
                 Text(CurrencyFormatter.format(tx.totalValue),
-                    style: AppTypography.caption
-                        .copyWith(color: AppColors.textSecondary)),
+                    style: AT.sectionLabel
+                        .copyWith(color: AT.ink2)),
             ],
           ),
         );
@@ -435,7 +426,7 @@ class _AdminSectionStockState extends State<AdminSectionStock>
                           .toList(),
                       onChanged: (v) => setS(() => selectedItem = v),
                     ),
-                    const SizedBox(height: Spacing.sm),
+                    const SizedBox(height: 8),
                     TextField(
                       controller: qtyCtrl,
                       keyboardType:
@@ -446,7 +437,7 @@ class _AdminSectionStockState extends State<AdminSectionStock>
                       ),
                     ),
                     if (type == StockTransactionType.receiving) ...[
-                      const SizedBox(height: Spacing.sm),
+                      const SizedBox(height: 8),
                       TextField(
                         controller: priceCtrl,
                         keyboardType:
@@ -455,7 +446,7 @@ class _AdminSectionStockState extends State<AdminSectionStock>
                             labelText: 'Cena/jednotka', suffixText: 'Kč'),
                       ),
                     ],
-                    const SizedBox(height: Spacing.sm),
+                    const SizedBox(height: 8),
                     TextField(
                       controller: noteCtrl,
                       decoration:
@@ -508,12 +499,12 @@ class _AdminSectionStockState extends State<AdminSectionStock>
         return Column(
           children: [
             Padding(
-              padding: const EdgeInsets.all(Spacing.md),
+              padding: const EdgeInsets.all(AT.rowPadH),
               child: Row(
                 children: [
                   Text('${inventories.length} inventur',
-                      style: AppTypography.bodySmall
-                          .copyWith(color: AppColors.textSecondary)),
+                      style: AT.rowSub
+                          .copyWith(color: AT.ink2)),
                   const Spacer(),
                   ElevatedButton.icon(
                     onPressed: () => _createInventory(context),
@@ -529,22 +520,22 @@ class _AdminSectionStockState extends State<AdminSectionStock>
                       () => _createInventory(context))
                   : ListView.separated(
                       padding:
-                          const EdgeInsets.symmetric(horizontal: Spacing.md),
+                          const EdgeInsets.symmetric(horizontal: AT.pagePad),
                       itemCount: inventories.length,
                       separatorBuilder: (_, __) =>
-                          Divider(height: 1, color: AppColors.divider),
+                          Divider(height: 1, color: AT.border),
                       itemBuilder: (_, i) {
                         final inv = inventories[i];
                         return ListTile(
                           leading: _statusIcon(inv.status),
                           title: Text(
                               'Inventura ${df.format(inv.createdAt)}',
-                              style: AppTypography.labelMedium.copyWith(
-                                  color: AppColors.textPrimary)),
+                              style: AT.rowTitle.copyWith(
+                                  color: AT.ink1)),
                           subtitle: Text(
                               '${inv.items.length} položek • ${inv.status.name}',
-                              style: AppTypography.caption.copyWith(
-                                  color: AppColors.textSecondary)),
+                              style: AT.sectionLabel.copyWith(
+                                  color: AT.ink2)),
                           trailing: inv.status == InventoryStatus.draft
                               ? TextButton(
                                   onPressed: () =>
@@ -642,14 +633,14 @@ class _AdminSectionStockState extends State<AdminSectionStock>
                     children: [
                       Expanded(
                         child: Text(item.stockItemName,
-                            style: AppTypography.bodyMedium.copyWith(
-                                color: AppColors.textPrimary)),
+                            style: AT.rowTitle.copyWith(fontWeight: FontWeight.w400).copyWith(
+                                color: AT.ink1)),
                       ),
                       Text(
                           'Oček.: ${item.expectedQuantity.toStringAsFixed(1)} ${item.unit.label}',
-                          style: AppTypography.caption.copyWith(
-                              color: AppColors.textSecondary)),
-                      const SizedBox(width: Spacing.sm),
+                          style: AT.sectionLabel.copyWith(
+                              color: AT.ink2)),
+                      const SizedBox(width: 8),
                       SizedBox(
                         width: 80,
                         child: TextFormField(
@@ -676,10 +667,10 @@ class _AdminSectionStockState extends State<AdminSectionStock>
                           },
                         ),
                       ),
-                      const SizedBox(width: Spacing.sm),
+                      const SizedBox(width: 8),
                       Text(
                         _diffText(items[i]),
-                        style: AppTypography.caption.copyWith(
+                        style: AT.sectionLabel.copyWith(
                             color: items[i].difference >= 0
                                 ? AppColors.success
                                 : AppColors.error),
@@ -730,12 +721,12 @@ class _AdminSectionStockState extends State<AdminSectionStock>
         return Column(
           children: [
             Padding(
-              padding: const EdgeInsets.all(Spacing.md),
+              padding: const EdgeInsets.all(AT.rowPadH),
               child: Row(
                 children: [
                   Text('${suppliers.length} dodavatelů',
-                      style: AppTypography.bodySmall
-                          .copyWith(color: AppColors.textSecondary)),
+                      style: AT.rowSub
+                          .copyWith(color: AT.ink2)),
                   const Spacer(),
                   ElevatedButton.icon(
                     onPressed: () => _showSupplierDialog(context, null),
@@ -751,10 +742,10 @@ class _AdminSectionStockState extends State<AdminSectionStock>
                       () => _showSupplierDialog(context, null))
                   : ListView.separated(
                       padding:
-                          const EdgeInsets.symmetric(horizontal: Spacing.md),
+                          const EdgeInsets.symmetric(horizontal: AT.pagePad),
                       itemCount: suppliers.length,
                       separatorBuilder: (_, __) =>
-                          Divider(height: 1, color: AppColors.divider),
+                          Divider(height: 1, color: AT.border),
                       itemBuilder: (_, i) =>
                           _supplierRow(context, suppliers[i]),
                     ),
@@ -771,25 +762,25 @@ class _AdminSectionStockState extends State<AdminSectionStock>
         width: 40,
         height: 40,
         decoration: BoxDecoration(
-          color: AppColors.backgroundTertiary,
+          color: AT.bgWarm,
           borderRadius: BorderRadius.circular(8),
         ),
-        child: Icon(Icons.business, color: AppColors.textSecondary, size: 20),
+        child: Icon(Icons.business, color: AT.ink2, size: 20),
       ),
       title: Text(s.name,
           style:
-              AppTypography.labelMedium.copyWith(color: AppColors.textPrimary)),
+              AT.rowTitle),
       subtitle: Text(
           [s.contactName, s.phone, s.email]
               .where((v) => v != null && v.isNotEmpty)
               .join(' • '),
           style:
-              AppTypography.caption.copyWith(color: AppColors.textSecondary)),
+              AT.sectionLabel),
       trailing: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           IconButton(
-            icon: Icon(Icons.edit, size: 18, color: AppColors.textSecondary),
+            icon: Icon(Icons.edit, size: 18, color: AT.ink2),
             onPressed: () => _showSupplierDialog(context, s),
           ),
           IconButton(
@@ -827,20 +818,20 @@ class _AdminSectionStockState extends State<AdminSectionStock>
               TextField(
                   controller: nameCtrl,
                   decoration: const InputDecoration(labelText: 'Název firmy')),
-              const SizedBox(height: Spacing.xs),
+              const SizedBox(height: 6),
               TextField(
                   controller: contactCtrl,
                   decoration:
                       const InputDecoration(labelText: 'Kontaktní osoba')),
-              const SizedBox(height: Spacing.xs),
+              const SizedBox(height: 6),
               TextField(
                   controller: phoneCtrl,
                   decoration: const InputDecoration(labelText: 'Telefon')),
-              const SizedBox(height: Spacing.xs),
+              const SizedBox(height: 6),
               TextField(
                   controller: emailCtrl,
                   decoration: const InputDecoration(labelText: 'Email')),
-              const SizedBox(height: Spacing.xs),
+              const SizedBox(height: 6),
               TextField(
                   controller: addressCtrl,
                   decoration: const InputDecoration(labelText: 'Adresa')),
@@ -884,16 +875,17 @@ class _AdminSectionStockState extends State<AdminSectionStock>
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 48, color: AppColors.textTertiary),
-          const SizedBox(height: Spacing.sm),
+          Icon(icon, size: 48, color: AT.ink3),
+          const SizedBox(height: 8),
           Text(label,
-              style: AppTypography.bodyMedium
-                  .copyWith(color: AppColors.textTertiary)),
-          const SizedBox(height: Spacing.sm),
+              style: AT.rowTitle.copyWith(fontWeight: FontWeight.w400)
+                  .copyWith(color: AT.ink3)),
+          const SizedBox(height: 8),
           ElevatedButton(onPressed: onCreate, child: const Text('Přidat')),
         ],
       ),
     );
   }
 }
+
 
