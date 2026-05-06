@@ -359,58 +359,38 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     final tablesVM = context.watch<TablesViewModel>();
     final payments = _getFilteredPayments(tablesVM);
     final range = _getDateRange();
-
     final totalRevenue = payments.fold(0.0, (sum, p) => sum + p.totalWithTip);
     final avgPerPayment = payments.isNotEmpty ? totalRevenue / payments.length : 0.0;
     final paymentCount = payments.length;
-
     final dateFormat = DateFormat('dd.MM.yyyy');
-    final subtitle = '${dateFormat.format(range.start)} – ${dateFormat.format(range.end)}';
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _buildPageHeader(title: 'Tržby', subtitle: subtitle, trailing: _buildPeriodFilter()),
-        Expanded(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.fromLTRB(24, 24, 24, 24),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // 3 KPI cards
-                Wrap(
-                  spacing: 16,
-                  runSpacing: 16,
-                  children: [
-                    _buildRevenueStatCard(
-                        Icons.receipt_long_rounded,
-                        'Příjmy s DPH',
-                        CurrencyFormatter.format(totalRevenue),
-                        AppColors.primary,
-                      ),
-                    _buildRevenueStatCard(
-                        Icons.person_rounded,
-                        'Průměrná útrata',
-                        CurrencyFormatter.format(avgPerPayment),
-                        AppColors.info,
-                      ),
-                    _buildRevenueStatCard(
-                        Icons.groups_rounded,
-                        'Počet plateb',
-                        '$paymentCount',
-                        AppColors.warning,
-                      ),
-                  ],
-                ),
-                const SizedBox(height: 24),
-                _buildRevenueChart(payments),
-                const SizedBox(height: 24),
-                _buildPaymentBreakdownTable(payments),
-              ],
-            ),
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(AT.pagePad),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Text('${dateFormat.format(range.start)} – ${dateFormat.format(range.end)}', style: AT.rowSub),
+              const Spacer(),
+              _buildPeriodFilter(),
+            ],
           ),
-        ),
-      ],
+          const SizedBox(height: 20),
+          Wrap(
+            spacing: AT.cardGap, runSpacing: AT.cardGap,
+            children: [
+              _buildRevenueStatCard(Icons.receipt_long_rounded, 'Příjmy s DPH', CurrencyFormatter.format(totalRevenue), AppColors.primary),
+              _buildRevenueStatCard(Icons.person_rounded, 'Průměrná útrata', CurrencyFormatter.format(avgPerPayment), AppColors.info),
+              _buildRevenueStatCard(Icons.groups_rounded, 'Počet plateb', '$paymentCount', AppColors.warning),
+            ],
+          ),
+          const SizedBox(height: AT.cardGap),
+          _buildRevenueChart(payments),
+          const SizedBox(height: AT.cardGap),
+          _buildPaymentBreakdownTable(payments),
+        ],
+      ),
     );
   }
 
@@ -820,16 +800,11 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
   Widget _buildOverviewContent() {
     final tablesVM = context.watch<TablesViewModel>();
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _buildPageHeader(title: 'Aktuální přehled'),
-        Expanded(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.fromLTRB(24, 24, 24, 24),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(AT.pagePad),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
           Wrap(
             spacing: 16,
             runSpacing: 16,
@@ -896,11 +871,8 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
                 ],
               ),
             )),
-              ],
-            ),
-          ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
@@ -912,17 +884,24 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildPageHeader(
-          title: 'Kategorie',
-          trailing: ElevatedButton.icon(
-            onPressed: () => _showAddCategoryDialog(productsVM),
-            icon: const Icon(Icons.add, size: 16),
-            label: const Text('Přidat kategorii'),
+        Container(
+          color: AT.bg,
+          padding: const EdgeInsets.fromLTRB(AT.pagePad, AT.pagePad, AT.pagePad, 12),
+          child: Row(
+            children: [
+              Text('${productsVM.categories.length} kategorií', style: AT.rowSub),
+              const Spacer(),
+              ElevatedButton.icon(
+                onPressed: () => _showAddCategoryDialog(productsVM),
+                icon: const Icon(Icons.add, size: 16),
+                label: const Text('Přidat kategorii'),
+              ),
+            ],
           ),
         ),
         Expanded(
           child: ListView(
-            padding: const EdgeInsets.fromLTRB(24, 20, 24, 24),
+            padding: const EdgeInsets.fromLTRB(AT.pagePad, 12, AT.pagePad, AT.pagePad),
             children: productsVM.categories.map((cat) => Container(
                 margin: const EdgeInsets.only(bottom: Spacing.sm),
                 padding: const EdgeInsets.all(AT.rowPadH),
@@ -1024,13 +1003,14 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildPageHeader(
-          title: 'Produkty',
-          trailing: ElevatedButton.icon(
-            onPressed: () => _showProductFormDialog(productsVM),
-            icon: const Icon(Icons.add, size: 16),
-            label: const Text('Přidat produkt'),
-          ),
+        Container(
+          color: AT.bg,
+          padding: const EdgeInsets.fromLTRB(AT.pagePad, AT.pagePad, AT.pagePad, 0),
+          child: Row(children: [
+            Text('\ produktů', style: AT.rowSub),
+            const Spacer(),
+            ElevatedButton.icon(onPressed: () => _showProductFormDialog(productsVM), icon: const Icon(Icons.add, size: 16), label: const Text('Přidat produkt')),
+          ]),
         ),
         categoryTabs,
         const SizedBox(height: 8),
@@ -1121,12 +1101,11 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildPageHeader(title: 'Historie plateb'),
         Expanded(
           child: payments.isEmpty
-              ? const Center(child: Text('Žádné platby'))
+              ? const AdminEmptyState(icon: Icons.history_rounded, title: 'Žádné platby', subtitle: 'Platby se zobrazí po první transakci')
               : ListView(
-                  padding: const EdgeInsets.fromLTRB(24, 20, 24, 24),
+                  padding: const EdgeInsets.all(AT.pagePad),
                   children: payments.reversed.map((payment) => Container(
                       margin: const EdgeInsets.only(bottom: Spacing.sm),
                       padding: const EdgeInsets.all(AT.rowPadH),
@@ -1189,19 +1168,20 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildPageHeader(
-          title: 'Personál',
-          trailing: ElevatedButton.icon(
-            onPressed: () => _showAddStaffDialog(auth),
-            icon: const Icon(Icons.add, size: 16),
-            label: const Text('Přidat člena'),
-          ),
+        Container(
+          color: AT.bg,
+          padding: const EdgeInsets.fromLTRB(AT.pagePad, AT.pagePad, AT.pagePad, 12),
+          child: Row(children: [
+            Text('\ členů', style: AT.rowSub),
+            const Spacer(),
+            ElevatedButton.icon(onPressed: () => _showAddStaffDialog(auth), icon: const Icon(Icons.add, size: 16), label: const Text('Přidat člena')),
+          ]),
         ),
         Expanded(
           child: auth.staff.isEmpty
               ? const Center(child: Text('Žádný personál'))
               : ListView(
-                  padding: const EdgeInsets.fromLTRB(24, 20, 24, 24),
+                  padding: const EdgeInsets.all(AT.pagePad),
                   children: auth.staff.map((member) {
                       final role = auth.getRoleById(member.roleId);
                       return Container(
@@ -1292,19 +1272,20 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildPageHeader(
-          title: 'Role',
-          trailing: ElevatedButton.icon(
-            onPressed: () => _showAddRoleDialog(auth),
-            icon: const Icon(Icons.add, size: 16),
-            label: const Text('Přidat roli'),
-          ),
+        Container(
+          color: AT.bg,
+          padding: const EdgeInsets.fromLTRB(AT.pagePad, AT.pagePad, AT.pagePad, 12),
+          child: Row(children: [
+            Text('\ rolí', style: AT.rowSub),
+            const Spacer(),
+            ElevatedButton.icon(onPressed: () => _showAddRoleDialog(auth), icon: const Icon(Icons.add, size: 16), label: const Text('Přidat roli')),
+          ]),
         ),
         Expanded(
           child: auth.roles.isEmpty
               ? const Center(child: Text('Žádné role'))
               : ListView(
-                  padding: const EdgeInsets.fromLTRB(24, 20, 24, 24),
+                  padding: const EdgeInsets.all(AT.pagePad),
                   children: auth.roles.map((role) {
                       final memberCount = auth.staff.where((s) => s.roleId == role.id).length;
                       return Container(
@@ -1403,7 +1384,6 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildPageHeader(title: 'Tiskárna'),
         Expanded(
           child: SingleChildScrollView(
             padding: const EdgeInsets.fromLTRB(24, 24, 24, 24),
@@ -2506,5 +2486,7 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     );
   }
 }
+
+
 
 
