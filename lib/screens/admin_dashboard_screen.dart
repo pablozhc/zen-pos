@@ -207,7 +207,11 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
       color: _bgWarm,
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Row(
-        children: sections.map((s) => _buildSubTab(s)).toList(),
+        children: [
+          ...sections.map((s) => _buildSubTab(s)),
+          const Spacer(),
+          if (_currentSection == AdminSection.revenue) _buildPeriodFilter(),
+        ],
       ),
     );
   }
@@ -362,21 +366,12 @@ class _AdminDashboardScreenState extends State<AdminDashboardScreen> {
     final totalRevenue = payments.fold(0.0, (sum, p) => sum + p.totalWithTip);
     final avgPerPayment = payments.isNotEmpty ? totalRevenue / payments.length : 0.0;
     final paymentCount = payments.length;
-    final dateFormat = DateFormat('dd.MM.yyyy');
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(AT.pagePad),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              Text('${dateFormat.format(range.start)} – ${dateFormat.format(range.end)}', style: AT.rowSub),
-              const Spacer(),
-              _buildPeriodFilter(),
-            ],
-          ),
-          const SizedBox(height: 20),
           Wrap(
             spacing: AT.cardGap, runSpacing: AT.cardGap,
             children: [
