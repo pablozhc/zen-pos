@@ -1,11 +1,18 @@
-import 'dart:async';
+﻿import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:uuid/uuid.dart';
 import '../models/product_model.dart';
+import '../repositories/products_repository.dart';
+import '../repositories/firestore_repositories.dart';
 import '../services/firestore_service.dart';
 
 class ProductsViewModel extends ChangeNotifier {
-  final FirestoreService _firestore = FirestoreService();
+  final ProductsRepository _repo;
+
+  ProductsViewModel([ProductsRepository? repo])
+      : _repo = repo ?? FirestoreProductsRepository(FirestoreService()) {
+    _initialize();
+  }
 
   List<ProductCategory> _categories = [];
   List<Product> _products = [];
@@ -16,13 +23,8 @@ class ProductsViewModel extends ChangeNotifier {
   List<ProductCategory> get categories => List.unmodifiable(_categories);
   List<Product> get products => List.unmodifiable(_products);
 
-  ProductsViewModel() {
-    _initialize();
-  }
-
   Future<void> _initialize() async {
-    // Seed defaults if Firestore is empty
-    if (await _firestore.isCollectionEmpty('categories')) {
+    if (await _repo.isCategoriesEmpty()) {
       final defaultCategories = [
         ProductCategory(id: 'food', title: 'Jídlo', emoji: '🍔'),
         ProductCategory(id: 'drinks', title: 'Pití', emoji: '🍺'),
@@ -30,11 +32,11 @@ class ProductsViewModel extends ChangeNotifier {
         ProductCategory(id: 'other', title: 'Ostatní', emoji: '📦'),
       ];
       for (final cat in defaultCategories) {
-        await _firestore.setCategory(cat);
+        await _repo.setCategory(cat);
       }
     }
 
-    if (await _firestore.isCollectionEmpty('products')) {
+    if (await _repo.isProductsEmpty()) {
       final defaultProducts = [
         Product(id: const Uuid().v4(), name: 'Pivo Pilsner', price: 55, categoryId: 'drinks', emoji: '🍺'),
         Product(id: const Uuid().v4(), name: 'Pivo Radler', price: 60, categoryId: 'drinks', emoji: '🍺'),
@@ -55,17 +57,17 @@ class ProductsViewModel extends ChangeNotifier {
         Product(id: const Uuid().v4(), name: 'Čokoládový dort', price: 110, categoryId: 'desserts', emoji: '🍫'),
       ];
       for (final product in defaultProducts) {
-        await _firestore.setProduct(product);
+        await _repo.setProduct(product);
       }
     }
 
     // Listen to real-time streams
-    _categoriesSub = _firestore.categoriesStream().listen((categories) {
+    _categoriesSub = _repo.categoriesStream().listen((categories) {
       _categories = categories;
       notifyListeners();
     });
 
-    _productsSub = _firestore.productsStream().listen((products) {
+    _productsSub = _repo.productsStream().listen((products) {
       _products = products;
       notifyListeners();
     });
@@ -100,14 +102,14 @@ class ProductsViewModel extends ChangeNotifier {
     );
     _categories = [..._categories, category];
     notifyListeners();
-    _firestore.setCategory(category);
+    _repo.setCategory(category);
   }
 
   void deleteCategory(String categoryId) {
     _products = _products.where((p) => p.categoryId != categoryId).toList();
     _categories = _categories.where((c) => c.id != categoryId).toList();
     notifyListeners();
-    _firestore.deleteCategory(categoryId);
+    _repo.deleteCategory(categoryId);
   }
 
   // Products
@@ -131,7 +133,7 @@ class ProductsViewModel extends ChangeNotifier {
     );
     _products = [..._products, product];
     notifyListeners();
-    _firestore.setProduct(product);
+    _repo.setProduct(product);
   }
 
   void updateProduct(String productId, {
@@ -152,7 +154,7 @@ class ProductsViewModel extends ChangeNotifier {
     if (emoji != null) p.emoji = emoji;
     if (isAvailable != null) p.isAvailable = isAvailable;
     notifyListeners();
-    _firestore.setProduct(p);
+    _repo.setProduct(p);
   }
 
   void updateProductPrice(String productId, double price) {
@@ -162,6 +164,7 @@ class ProductsViewModel extends ChangeNotifier {
   void deleteProduct(String productId) {
     _products = _products.where((p) => p.id != productId).toList();
     notifyListeners();
-    _firestore.deleteProduct(productId);
+    _repo.deleteProduct(productId);
   }
 }
+

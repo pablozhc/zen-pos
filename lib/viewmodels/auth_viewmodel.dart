@@ -1,4 +1,4 @@
-import 'dart:async';
+﻿import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
 import 'package:crypto/crypto.dart';
@@ -6,11 +6,18 @@ import 'package:flutter/foundation.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import '../models/staff_model.dart';
+import '../repositories/staff_repository.dart';
+import '../repositories/firestore_repositories.dart';
 import '../services/firestore_service.dart';
 
 class AuthViewModel extends ChangeNotifier {
-  final FirestoreService _firestore = FirestoreService();
+  final StaffRepository _repo;
   final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
+
+  AuthViewModel([StaffRepository? repo])
+      : _repo = repo ?? FirestoreStaffRepository(FirestoreService()) {
+    _initialize();
+  }
 
   List<StaffMember> _staff = [];
   List<StaffRole> _roles = [];
@@ -42,24 +49,20 @@ class AuthViewModel extends ChangeNotifier {
     return currentRole?.hasPermission(permission) ?? false;
   }
 
-  AuthViewModel() {
-    _initialize();
-  }
-
   static String hashString(String input) {
     return sha256.convert(utf8.encode(input)).toString();
   }
 
   Future<void> _initialize() async {
     // Seed default roles if empty
-    if (await _firestore.isCollectionEmpty('roles')) {
-      await _firestore.setRole(StaffRole(
+    if (await _repo.isRolesEmpty()) {
+      await _repo.setRole(StaffRole(
         id: 'role_admin',
         name: 'Admin',
         permissions: StaffRole.allPermissions.keys.toList(),
         isDefault: true,
       ));
-      await _firestore.setRole(StaffRole(
+      await _repo.setRole(StaffRole(
         id: 'role_waiter',
         name: 'Číšník',
         permissions: ['tables', 'orders', 'payments'],
@@ -67,8 +70,8 @@ class AuthViewModel extends ChangeNotifier {
     }
 
     // Seed default admin user if empty (without Firebase Auth — user registers via UI)
-    if (await _firestore.isCollectionEmpty('staff')) {
-      await _firestore.setStaff(StaffMember(
+    if (await _repo.isStaffEmpty()) {
+      await _repo.setStaff(StaffMember(
         id: 'staff_admin',
         name: 'Admin',
         pinHash: hashString('0000'),
@@ -77,12 +80,12 @@ class AuthViewModel extends ChangeNotifier {
     }
 
     // Listen to streams
-    _rolesSub = _firestore.rolesStream().listen((roles) {
+    _rolesSub = _repo.rolesStream().listen((roles) {
       _roles = roles;
       notifyListeners();
     });
 
-    _staffSub = _firestore.staffStream().listen((staff) {
+    _staffSub = _repo.staffStream().listen((staff) {
       _staff = staff;
       if (!_isReady && staff.isNotEmpty) {
         _isReady = true;
@@ -124,7 +127,7 @@ class AuthViewModel extends ChangeNotifier {
       final uid = credential.user?.uid;
       if (uid == null) return 'Přihlášení selhalo';
 
-      final member = await _firestore.getStaffByFirebaseUid(uid);
+      final member = await _repo.getStaffByFirebaseUid(uid);
       if (member == null) {
         await _firebaseAuth.signOut();
         return 'Tento účet není propojen s žádným členem personálu';
@@ -188,7 +191,7 @@ class AuthViewModel extends ChangeNotifier {
       _staff[index].firebaseUid = uid;
       _staff[index].username = email;
       notifyListeners();
-      await _firestore.setStaff(_staff[index]);
+      await _repo.setStaff(_staff[index]);
 
       return null;
     } on FirebaseAuthException catch (e) {
@@ -231,7 +234,7 @@ class AuthViewModel extends ChangeNotifier {
     );
     _roles = [..._roles, role];
     notifyListeners();
-    _firestore.setRole(role);
+    _repo.setRole(role);
   }
 
   void updateRole(String roleId, {String? name, List<String>? permissions}) {
@@ -240,7 +243,7 @@ class AuthViewModel extends ChangeNotifier {
     if (name != null) _roles[index].name = name;
     if (permissions != null) _roles[index].permissions = permissions;
     notifyListeners();
-    _firestore.setRole(_roles[index]);
+    _repo.setRole(_roles[index]);
   }
 
   void deleteRole(String roleId) {
@@ -248,7 +251,7 @@ class AuthViewModel extends ChangeNotifier {
     if (role == null || role.isDefault) return;
     _roles = _roles.where((r) => r.id != roleId).toList();
     notifyListeners();
-    _firestore.deleteRole(roleId);
+    _repo.deleteRole(roleId);
   }
 
   // ── Staff CRUD ──
@@ -266,7 +269,7 @@ class AuthViewModel extends ChangeNotifier {
     );
     _staff = [..._staff, member];
     notifyListeners();
-    _firestore.setStaff(member);
+    _repo.setStaff(member);
   }
 
   void updateStaffMember(
@@ -284,7 +287,7 @@ class AuthViewModel extends ChangeNotifier {
     if (roleId != null) member.roleId = roleId;
     if (isActive != null) member.isActive = isActive;
     notifyListeners();
-    _firestore.setStaff(member);
+    _repo.setStaff(member);
   }
 
   void unlinkAdmin(String staffId) {
@@ -294,12 +297,13 @@ class AuthViewModel extends ChangeNotifier {
     _staff[index].username = null;
     _staff[index].passwordHash = null;
     notifyListeners();
-    _firestore.setStaff(_staff[index]);
+    _repo.setStaff(_staff[index]);
   }
 
   void deleteStaffMember(String staffId) {
     _staff = _staff.where((s) => s.id != staffId).toList();
     notifyListeners();
-    _firestore.deleteStaff(staffId);
+    _repo.deleteStaff(staffId);
   }
 }
+

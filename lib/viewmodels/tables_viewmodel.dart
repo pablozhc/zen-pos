@@ -1,4 +1,4 @@
-import 'dart:async';
+﻿import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:uuid/uuid.dart';
 import '../models/table_model.dart';
@@ -6,10 +6,17 @@ import '../models/order_model.dart';
 import '../models/product_model.dart';
 import '../models/payment_model.dart';
 import '../models/addon_model.dart';
+import '../repositories/tables_repository.dart';
+import '../repositories/firestore_repositories.dart';
 import '../services/firestore_service.dart';
 
 class TablesViewModel extends ChangeNotifier {
-  final FirestoreService _firestore = FirestoreService();
+  final TablesRepository _repo;
+
+  TablesViewModel([TablesRepository? repo])
+      : _repo = repo ?? FirestoreTablesRepository(FirestoreService()) {
+    _initialize();
+  }
 
   List<TableModel> _tables = [];
   List<Payment> _paymentHistory = [];
@@ -20,48 +27,29 @@ class TablesViewModel extends ChangeNotifier {
   StreamSubscription? _tablesSub;
   StreamSubscription? _paymentsSub;
 
-  // Getters
   List<TableModel> get allTables => _tables;
-
-  List<TableModel> get activeTables =>
-      _tables.where((t) => t.status == TableStatus.occupied).toList();
-
-  List<TableModel> get freeTables =>
-      _tables.where((t) => t.status == TableStatus.free).toList();
-
+  List<TableModel> get activeTables => _tables.where((t) => t.status == TableStatus.occupied).toList();
+  List<TableModel> get freeTables   => _tables.where((t) => t.status == TableStatus.free).toList();
   bool get showFreeTables => _showFreeTables;
   TableModel? get selectedTable => _selectedTable;
   int? get preselectedTable => _preselectedTableNumber;
-
-  // Stats
-  double get todayRevenue {
-    return activeTables.fold(
-      0.0,
-      (sum, table) => sum + table.displayAmount,
-    );
-  }
-
   int get todayOrders => activeTables.length;
-
-  TablesViewModel() {
-    _initialize();
-  }
+  double get todayRevenue => activeTables.fold(0.0, (sum, t) => sum + t.displayAmount);
 
   Future<void> _initialize() async {
-    // Seed 10 empty tables if Firestore is empty
-    if (await _firestore.isCollectionEmpty('tables')) {
+    if (await _repo.isTablesEmpty()) {
       for (int i = 1; i <= 10; i++) {
         final table = TableModel(
           id: 'table_$i',
           number: i,
           status: TableStatus.free,
         );
-        await _firestore.setTable(table);
+        await _repo.setTable(table);
       }
     }
 
     // Listen to real-time streams
-    _tablesSub = _firestore.tablesStream().listen((tables) {
+    _tablesSub = _repo.tablesStream().listen((tables) {
       _tables = tables;
 
       // Refresh selected table reference
@@ -78,7 +66,7 @@ class TablesViewModel extends ChangeNotifier {
       notifyListeners();
     });
 
-    _paymentsSub = _firestore.paymentsStream().listen((payments) {
+    _paymentsSub = _repo.paymentsStream().listen((payments) {
       _paymentHistory = payments;
       notifyListeners();
     });
@@ -127,7 +115,7 @@ class TablesViewModel extends ChangeNotifier {
     if (index != -1) {
       _tables[index] = table;
       notifyListeners();
-      _firestore.setTable(table);
+      _repo.setTable(table);
     }
   }
 
@@ -153,7 +141,7 @@ class TablesViewModel extends ChangeNotifier {
   void addPayment(Payment payment) {
     _paymentHistory = [payment, ..._paymentHistory];
     notifyListeners();
-    _firestore.addPayment(payment);
+    _repo.addPayment(payment);
   }
 
   void freeTable(int tableNumber) {
@@ -162,7 +150,7 @@ class TablesViewModel extends ChangeNotifier {
       table.status = TableStatus.free;
       table.currentOrder = null;
       notifyListeners();
-      _firestore.setTable(table);
+      _repo.setTable(table);
     }
   }
 
@@ -208,7 +196,7 @@ class TablesViewModel extends ChangeNotifier {
     }
 
     notifyListeners();
-    _firestore.setTable(table);
+    _repo.setTable(table);
   }
 
   void updateOrderItemQuantity(int tableNumber, String itemId, int newQuantity) {
@@ -243,7 +231,7 @@ class TablesViewModel extends ChangeNotifier {
     }
 
     notifyListeners();
-    _firestore.setTable(table);
+    _repo.setTable(table);
   }
 
   void deleteOrderItem(int tableNumber, String itemId) {
@@ -258,7 +246,7 @@ class TablesViewModel extends ChangeNotifier {
     }
 
     notifyListeners();
-    _firestore.setTable(table);
+    _repo.setTable(table);
   }
 
   void stornoItem(int tableNumber, String itemId, {String? reason}) {
@@ -281,7 +269,7 @@ class TablesViewModel extends ChangeNotifier {
     );
 
     notifyListeners();
-    _firestore.setTable(table);
+    _repo.setTable(table);
   }
 
   void setDiscount(int tableNumber, double amount, String? reason) {
@@ -292,7 +280,7 @@ class TablesViewModel extends ChangeNotifier {
     table.currentOrder!.discountReason = reason;
 
     notifyListeners();
-    _firestore.setTable(table);
+    _repo.setTable(table);
   }
 
   void setPersonCount(int tableNumber, int count) {
@@ -313,9 +301,10 @@ class TablesViewModel extends ChangeNotifier {
     }
 
     notifyListeners();
-    _firestore.setTable(table);
+    _repo.setTable(table);
   }
 
   // Alias used by admin sections
   List<TableModel> get tables => _tables;
 }
+
