@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:provider/provider.dart';
 import '../theme/app_colors.dart';
 import '../viewmodels/auth_viewmodel.dart';
@@ -62,7 +63,10 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
       backgroundColor: AppColors.backgroundSecondary,
       body: Center(
         child: SingleChildScrollView(
-          child: Container(
+          child: Stack(
+            clipBehavior: Clip.none,
+            children: [
+              Container(
             width: 400,
             padding: const EdgeInsets.all(40),
             decoration: BoxDecoration(
@@ -207,6 +211,30 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
                 ),
               ],
             ),
+          ),
+              // Close button — top right corner
+              Positioned(
+                top: 12,
+                right: 12,
+                child: GestureDetector(
+                  onTap: () => Navigator.of(context).pop(),
+                  child: Container(
+                    width: 32,
+                    height: 32,
+                    decoration: BoxDecoration(
+                      color: AppColors.backgroundSecondary,
+                      shape: BoxShape.circle,
+                      border: Border.all(color: AppColors.border),
+                    ),
+                    child: Icon(
+                      CupertinoIcons.xmark,
+                      size: 12,
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
       ),
