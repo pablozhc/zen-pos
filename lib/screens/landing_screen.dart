@@ -123,17 +123,14 @@ class _LandingScreenState extends State<LandingScreen>
                   opacity: curve,
                   child: SlideTransition(
                     position: Tween<Offset>(
-                      begin: const Offset(0, 0.04),
+                      begin: const Offset(0, 0.03),
                       end: Offset.zero,
                     ).animate(curve),
                     child: child,
                   ),
                 );
               },
-              child: _RoadmapOverlay(
-                onClose: _closeRoadmap,
-                blobController: _blobController,
-              ),
+              child: _RoadmapOverlay(onClose: _closeRoadmap),
             ),
         ],
       ),
@@ -270,11 +267,19 @@ class _LandingScreenState extends State<LandingScreen>
 
 // ── Roadmap Overlay ──────────────────────────────────────────────────────────
 
-class _RoadmapOverlay extends StatelessWidget {
+class _RoadmapOverlay extends StatefulWidget {
   final VoidCallback onClose;
-  final AnimationController blobController;
+  const _RoadmapOverlay({required this.onClose});
 
-  const _RoadmapOverlay({required this.onClose, required this.blobController});
+  @override
+  State<_RoadmapOverlay> createState() => _RoadmapOverlayState();
+}
+
+class _RoadmapOverlayState extends State<_RoadmapOverlay>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _stagger;
+  final _scrollController = ScrollController();
+  final List<GlobalKey> _phaseKeys = List.generate(4, (_) => GlobalKey());
 
   static const _phases = [
     _Phase(
@@ -290,23 +295,23 @@ class _RoadmapOverlay extends StatelessWidget {
       ],
     ),
     _Phase(
-      label: 'In progress',
+      label: 'In Progress',
       period: 'Q2 – Q3 2026',
       color: Color(0xFF5856D6),
       items: [
         _RoadmapItem('Bluetooth printing', 'Xprinter XP-C260H, kitchen & receipt tickets', _Status.active),
-        _RoadmapItem('Happy Hours auto-apply', 'Discounts fire automatically in POS at set times', _Status.active),
-        _RoadmapItem('iOS App Store release', 'TestFlight beta → production, bundle ID set', _Status.active),
-        _RoadmapItem('Waitlist + onboarding flow', 'Email capture, invite system, first-run setup', _Status.next),
+        _RoadmapItem('Happy Hours auto-apply', 'Discounts fire automatically at set times', _Status.active),
+        _RoadmapItem('iOS App Store release', 'TestFlight beta → production', _Status.active),
+        _RoadmapItem('Waitlist & onboarding', 'Email capture, invite system, first-run setup', _Status.next),
         _RoadmapItem('Offline mode', 'Local cache, sync on reconnect, zero data loss', _Status.next),
       ],
     ),
     _Phase(
-      label: 'Coming soon',
+      label: 'Coming Soon',
       period: 'Q4 2026',
       color: Color(0xFFFF9F0A),
       items: [
-        _RoadmapItem('Kitchen Display System', 'Live ticket board for kitchen staff, bump to complete', _Status.planned),
+        _RoadmapItem('Kitchen Display System', 'Live ticket board, bump to complete', _Status.planned),
         _RoadmapItem('Table reservations', 'Booking flow, calendar view, guest notes', _Status.planned),
         _RoadmapItem('Split bill', 'By item or evenly, partial card payments', _Status.planned),
         _RoadmapItem('Advanced analytics', 'Hourly heatmaps, top products, staff performance', _Status.planned),
@@ -328,209 +333,340 @@ class _RoadmapOverlay extends StatelessWidget {
   ];
 
   @override
-  Widget build(BuildContext context) {
-    return Container(
-      color: const Color(0xFF080810).withOpacity(0.96),
-      child: Stack(
-        children: [
-          // Subtle blob background
-          AnimatedBuilder(
-            animation: blobController,
-            builder: (_, __) => CustomPaint(
-              painter: _BlobPainter(blobController.value, opacity: 0.18),
-              size: MediaQuery.of(context).size,
-            ),
-          ),
+  void initState() {
+    super.initState();
+    _stagger = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1400),
+    )..forward();
+  }
 
-          SafeArea(
-            child: Column(
+  @override
+  void dispose() {
+    _stagger.dispose();
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _scrollToPhase(int index) {
+    final ctx = _phaseKeys[index].currentContext;
+    if (ctx == null) return;
+    Scrollable.ensureVisible(
+      ctx,
+      duration: const Duration(milliseconds: 700),
+      curve: Curves.easeInOutCubic,
+    );
+  }
+
+  Animation<double> _fade(double s, double e) => CurvedAnimation(
+    parent: _stagger,
+    curve: Interval(s, e, curve: Curves.easeOutCubic),
+  );
+
+  Animation<Offset> _slide(double s, double e, [Offset begin = const Offset(0, 0.18)]) =>
+      Tween<Offset>(begin: begin, end: Offset.zero).animate(
+        CurvedAnimation(parent: _stagger, curve: Interval(s, e, curve: Curves.easeOutCubic)),
+      );
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: const Color(0xFF080810),
+      child: SafeArea(
+        child: Stack(
+          children: [
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Header
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(24, 16, 16, 0),
-                  child: Row(
+                _buildHeader(),
+                _buildPhaseNav(),
+                const SizedBox(height: 4),
+                Divider(height: 1, thickness: 0.5, color: Colors.white.withOpacity(0.07)),
+                Expanded(
+                  child: Stack(
                     children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text('Roadmap', style: TextStyle(
-                            fontFamily: '.SF Pro Display',
-                            fontSize: 28, fontWeight: FontWeight.w700,
-                            color: Colors.white, letterSpacing: -0.8,
-                          )),
-                          Text('Where Zen POS is headed', style: TextStyle(
-                            fontFamily: '.SF Pro Text',
-                            fontSize: 14, fontWeight: FontWeight.w400,
-                            color: Colors.white.withOpacity(0.4),
-                          )),
-                        ],
+                      SingleChildScrollView(
+                        controller: _scrollController,
+                        padding: const EdgeInsets.fromLTRB(32, 0, 32, 100),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: _phases.asMap().entries.map((e) =>
+                            _buildPhaseSection(e.key, e.value),
+                          ).toList(),
+                        ),
                       ),
-                      const Spacer(),
-                      GestureDetector(
-                        onTap: onClose,
-                        child: Container(
-                          width: 36, height: 36,
-                          decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.08),
-                            borderRadius: BorderRadius.circular(18),
-                            border: Border.all(color: Colors.white.withOpacity(0.12), width: 0.5),
+                      // Bottom fade-out
+                      Positioned(
+                        bottom: 0, left: 0, right: 0,
+                        child: IgnorePointer(
+                          child: Container(
+                            height: 80,
+                            decoration: const BoxDecoration(
+                              gradient: LinearGradient(
+                                begin: Alignment.topCenter,
+                                end: Alignment.bottomCenter,
+                                colors: [Colors.transparent, Color(0xFF080810)],
+                              ),
+                            ),
                           ),
-                          child: Icon(CupertinoIcons.xmark,
-                            size: 14, color: Colors.white.withOpacity(0.7)),
                         ),
                       ),
                     ],
                   ),
                 ),
+              ],
+            ),
 
-                const SizedBox(height: 28),
-
-                // Phases
-                Expanded(
-                  child: SingleChildScrollView(
-                    padding: const EdgeInsets.fromLTRB(24, 0, 24, 40),
-                    child: Column(
-                      children: _phases.asMap().entries.map((e) =>
-                        _PhaseCard(phase: e.value, isLast: e.key == _phases.length - 1),
-                      ).toList(),
+            // Close button — fixed top-right
+            Positioned(
+              top: 16, right: 16,
+              child: FadeTransition(
+                opacity: _fade(0, 0.2),
+                child: GestureDetector(
+                  onTap: widget.onClose,
+                  child: Container(
+                    width: 36, height: 36,
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.08),
+                      shape: BoxShape.circle,
+                      border: Border.all(color: Colors.white.withOpacity(0.12), width: 0.5),
                     ),
+                    child: Icon(CupertinoIcons.xmark, size: 13,
+                      color: Colors.white.withOpacity(0.7)),
                   ),
                 ),
-              ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildHeader() {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(32, 22, 72, 0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          FadeTransition(
+            opacity: _fade(0, 0.25),
+            child: SlideTransition(
+              position: _slide(0, 0.25),
+              child: const Text('Roadmap', style: TextStyle(
+                fontFamily: '.SF Pro Display',
+                fontSize: 40, fontWeight: FontWeight.w700,
+                color: Colors.white, letterSpacing: -1.5, height: 1.0,
+              )),
+            ),
+          ),
+          const SizedBox(height: 5),
+          FadeTransition(
+            opacity: _fade(0.04, 0.28),
+            child: SlideTransition(
+              position: _slide(0.04, 0.28),
+              child: Text('Where Zen POS is headed', style: TextStyle(
+                fontFamily: '.SF Pro Text',
+                fontSize: 14,
+                color: Colors.white.withOpacity(0.35),
+              )),
             ),
           ),
         ],
       ),
     );
   }
-}
 
-class _PhaseCard extends StatelessWidget {
-  final _Phase phase;
-  final bool isLast;
-
-  const _PhaseCard({required this.phase, required this.isLast});
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 20),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Timeline
-          Column(
-            children: [
-              Container(
-                width: 10, height: 10,
-                decoration: BoxDecoration(
-                  color: phase.color,
-                  shape: BoxShape.circle,
-                  boxShadow: [BoxShadow(color: phase.color.withOpacity(0.5), blurRadius: 8)],
-                ),
-              ),
-              if (!isLast)
-                Container(
-                  width: 1,
-                  height: 20 + phase.items.length * 60.0,
-                  color: Colors.white.withOpacity(0.08),
-                ),
-            ],
-          ),
-          const SizedBox(width: 16),
-
-          // Content
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Phase header
-                Row(
-                  children: [
-                    Text(phase.label, style: TextStyle(
-                      fontFamily: '.SF Pro Text',
-                      fontSize: 13, fontWeight: FontWeight.w600,
-                      color: phase.color, letterSpacing: 0.1,
-                    )),
-                    const SizedBox(width: 8),
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+  Widget _buildPhaseNav() {
+    return FadeTransition(
+      opacity: _fade(0.08, 0.32),
+      child: SlideTransition(
+        position: _slide(0.08, 0.32),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(32, 18, 32, 18),
+          child: SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: _phases.asMap().entries.map((e) {
+                final phase = e.value;
+                return Padding(
+                  padding: const EdgeInsets.only(right: 8),
+                  child: GestureDetector(
+                    onTap: () => _scrollToPhase(e.key),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 13, vertical: 7),
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.06),
-                        borderRadius: BorderRadius.circular(6),
+                        color: phase.color.withOpacity(0.09),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(color: phase.color.withOpacity(0.22), width: 0.5),
                       ),
-                      child: Text(phase.period, style: TextStyle(
-                        fontFamily: '.SF Pro Text',
-                        fontSize: 11, fontWeight: FontWeight.w500,
-                        color: Colors.white.withOpacity(0.35),
-                      )),
-                    ),
-                  ],
-                ),
-
-                const SizedBox(height: 12),
-
-                // Items
-                Container(
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.04),
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(color: Colors.white.withOpacity(0.08), width: 0.5),
-                  ),
-                  child: Column(
-                    children: phase.items.asMap().entries.map((e) {
-                      final item = e.value;
-                      final isLast = e.key == phase.items.length - 1;
-                      return Column(
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
                         children: [
-                          Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                            child: Row(
-                              children: [
-                                _StatusDot(status: item.status, phaseColor: phase.color),
-                                const SizedBox(width: 12),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(item.title, style: TextStyle(
-                                        fontFamily: '.SF Pro Text',
-                                        fontSize: 14, fontWeight: FontWeight.w600,
-                                        color: item.status == _Status.done
-                                            ? Colors.white.withOpacity(0.5)
-                                            : Colors.white.withOpacity(0.9),
-                                        letterSpacing: -0.2,
-                                        decoration: item.status == _Status.done
-                                            ? TextDecoration.lineThrough
-                                            : null,
-                                        decorationColor: Colors.white.withOpacity(0.3),
-                                      )),
-                                      const SizedBox(height: 2),
-                                      Text(item.description, style: TextStyle(
-                                        fontFamily: '.SF Pro Text',
-                                        fontSize: 12, fontWeight: FontWeight.w400,
-                                        color: Colors.white.withOpacity(0.3),
-                                        height: 1.4,
-                                      )),
-                                    ],
-                                  ),
-                                ),
-                              ],
+                          Container(
+                            width: 5, height: 5,
+                            decoration: BoxDecoration(
+                              color: phase.color,
+                              shape: BoxShape.circle,
+                              boxShadow: [BoxShadow(
+                                color: phase.color.withOpacity(0.7),
+                                blurRadius: 5,
+                              )],
                             ),
                           ),
-                          if (!isLast)
-                            Divider(height: 1, thickness: 0.5,
-                              color: Colors.white.withOpacity(0.06), indent: 44),
+                          const SizedBox(width: 7),
+                          Text(phase.label, style: TextStyle(
+                            fontFamily: '.SF Pro Text',
+                            fontSize: 12, fontWeight: FontWeight.w500,
+                            color: phase.color.withOpacity(0.9),
+                          )),
                         ],
-                      );
-                    }).toList(),
+                      ),
+                    ),
                   ),
-                ),
-              ],
+                );
+              }).toList(),
             ),
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildPhaseSection(int index, _Phase phase) {
+    final base = 0.13 + index * 0.18;
+
+    return Padding(
+      key: _phaseKeys[index],
+      padding: const EdgeInsets.only(top: 40),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          FadeTransition(
+            opacity: _fade(base, base + 0.18),
+            child: SlideTransition(
+              position: _slide(base, base + 0.18),
+              child: _buildPhaseHeader(index, phase),
+            ),
+          ),
+          const SizedBox(height: 18),
+          ...phase.items.asMap().entries.map((e) {
+            final iBase = (base + 0.06 + e.key * 0.05).clamp(0.0, 0.9);
+            final iEnd = (iBase + 0.22).clamp(0.0, 1.0);
+            return FadeTransition(
+              opacity: _fade(iBase, iEnd),
+              child: SlideTransition(
+                position: _slide(iBase, iEnd, const Offset(0, 0.1)),
+                child: _buildItemRow(e.value, phase.color, e.key == phase.items.length - 1),
+              ),
+            );
+          }),
         ],
       ),
+    );
+  }
+
+  Widget _buildPhaseHeader(int index, _Phase phase) {
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        Positioned(
+          right: 0, top: -10,
+          child: Text('0${index + 1}', style: TextStyle(
+            fontFamily: '.SF Pro Display',
+            fontSize: 96, fontWeight: FontWeight.w800,
+            color: Colors.white.withOpacity(0.025),
+            letterSpacing: -4, height: 1,
+          )),
+        ),
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Container(
+              width: 3, height: 40,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [phase.color, phase.color.withOpacity(0.25)],
+                ),
+                borderRadius: BorderRadius.circular(2),
+                boxShadow: [BoxShadow(
+                  color: phase.color.withOpacity(0.5),
+                  blurRadius: 10, spreadRadius: 1,
+                )],
+              ),
+            ),
+            const SizedBox(width: 14),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(phase.label, style: const TextStyle(
+                  fontFamily: '.SF Pro Display',
+                  fontSize: 20, fontWeight: FontWeight.w700,
+                  color: Colors.white, letterSpacing: -0.4,
+                )),
+                const SizedBox(height: 1),
+                Text(phase.period, style: TextStyle(
+                  fontFamily: '.SF Pro Text',
+                  fontSize: 12, fontWeight: FontWeight.w500,
+                  color: phase.color.withOpacity(0.75),
+                  letterSpacing: 0.1,
+                )),
+              ],
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildItemRow(_RoadmapItem item, Color phaseColor, bool isLast) {
+    final isDone = item.status == _Status.done;
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 14),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SizedBox(width: 17),
+              _StatusDot(status: item.status, phaseColor: phaseColor),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(item.title, style: TextStyle(
+                      fontFamily: '.SF Pro Text',
+                      fontSize: 14, fontWeight: FontWeight.w600,
+                      color: isDone
+                          ? Colors.white.withOpacity(0.28)
+                          : Colors.white.withOpacity(0.88),
+                      letterSpacing: -0.2,
+                      decoration: isDone ? TextDecoration.lineThrough : null,
+                      decorationColor: Colors.white.withOpacity(0.15),
+                    )),
+                    const SizedBox(height: 3),
+                    Text(item.description, style: TextStyle(
+                      fontFamily: '.SF Pro Text',
+                      fontSize: 12,
+                      color: Colors.white.withOpacity(0.28),
+                      height: 1.4,
+                    )),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+        if (!isLast)
+          Divider(
+            height: 1, thickness: 0.5,
+            color: Colors.white.withOpacity(0.05),
+            indent: 51,
+          ),
+      ],
     );
   }
 }
@@ -548,24 +684,29 @@ class _StatusDot extends StatelessWidget {
         return Container(
           width: 20, height: 20,
           decoration: BoxDecoration(
-            color: const Color(0xFF30D158).withOpacity(0.15),
+            color: const Color(0xFF30D158).withOpacity(0.12),
             shape: BoxShape.circle,
           ),
-          child: const Icon(CupertinoIcons.checkmark, size: 11,
+          child: const Icon(CupertinoIcons.checkmark_alt, size: 11,
             color: Color(0xFF30D158)),
         );
       case _Status.active:
         return Container(
           width: 20, height: 20,
           decoration: BoxDecoration(
-            color: phaseColor.withOpacity(0.15),
             shape: BoxShape.circle,
+            color: phaseColor.withOpacity(0.12),
             border: Border.all(color: phaseColor, width: 1.5),
           ),
           child: Center(
             child: Container(
-              width: 6, height: 6,
-              decoration: BoxDecoration(color: phaseColor, shape: BoxShape.circle),
+              width: 7, height: 7,
+              decoration: BoxDecoration(
+                color: phaseColor,
+                shape: BoxShape.circle,
+                boxShadow: [BoxShadow(
+                  color: phaseColor.withOpacity(0.8), blurRadius: 6)],
+              ),
             ),
           ),
         );
@@ -573,26 +714,25 @@ class _StatusDot extends StatelessWidget {
         return Container(
           width: 20, height: 20,
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.05),
             shape: BoxShape.circle,
-            border: Border.all(color: Colors.white.withOpacity(0.2), width: 1),
+            border: Border.all(color: Colors.white.withOpacity(0.22), width: 1),
           ),
           child: Icon(CupertinoIcons.arrow_right, size: 9,
-            color: Colors.white.withOpacity(0.4)),
+            color: Colors.white.withOpacity(0.45)),
         );
       case _Status.planned:
       case _Status.idea:
         return Container(
           width: 20, height: 20,
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.04),
             shape: BoxShape.circle,
+            border: Border.all(color: Colors.white.withOpacity(0.1), width: 1),
           ),
           child: Center(
             child: Container(
               width: 5, height: 5,
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.2),
+                color: Colors.white.withOpacity(0.18),
                 shape: BoxShape.circle,
               ),
             ),

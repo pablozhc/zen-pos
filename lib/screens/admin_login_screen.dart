@@ -61,182 +61,155 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.backgroundSecondary,
-      body: Center(
-        child: SingleChildScrollView(
-          child: Stack(
-            clipBehavior: Clip.none,
-            children: [
-              Container(
-            width: 400,
-            padding: const EdgeInsets.all(40),
-            decoration: BoxDecoration(
-              color: AppColors.cardBackground,
-              borderRadius: BorderRadius.circular(24),
-              border: Border.all(color: AppColors.border),
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // Logo
-                Container(
-                  width: 72,
-                  height: 72,
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      colors: [
-                        AppColors.gradientStart,
-                        AppColors.gradientEnd,
-                      ],
-                    ),
-                    borderRadius: BorderRadius.circular(18),
-                  ),
-                  child: const Center(
-                    child: Text(
-                      'Z',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 36,
-                        fontWeight: FontWeight.bold,
+      body: Stack(
+        children: [
+          // Centered login card
+          Center(
+            child: SingleChildScrollView(
+              child: Container(
+                width: 400,
+                padding: const EdgeInsets.all(40),
+                decoration: BoxDecoration(
+                  color: AppColors.cardBackground,
+                  borderRadius: BorderRadius.circular(24),
+                  border: Border.all(color: AppColors.border),
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Logo
+                    Container(
+                      width: 72,
+                      height: 72,
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [AppColors.gradientStart, AppColors.gradientEnd],
+                        ),
+                        borderRadius: BorderRadius.circular(18),
+                      ),
+                      child: const Center(
+                        child: Text('Z', style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 36,
+                          fontWeight: FontWeight.bold,
+                        )),
                       ),
                     ),
-                  ),
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  'ZEN POS',
-                  style: TextStyle(
-                    color: AppColors.textPrimary,
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                    letterSpacing: 2,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  'Admin Panel',
-                  style: TextStyle(
-                    color: AppColors.textSecondary,
-                    fontSize: 14,
-                  ),
-                ),
-                const SizedBox(height: 32),
-
-                // Email
-                TextField(
-                  controller: _emailController,
-                  keyboardType: TextInputType.emailAddress,
-                  style: TextStyle(color: AppColors.textPrimary),
-                  decoration: InputDecoration(
-                    hintText: 'E-mail',
-                    hintStyle: TextStyle(color: AppColors.textTertiary),
-                    prefixIcon: Icon(Icons.email_outlined,
-                        color: AppColors.textSecondary),
-                  ),
-                  onSubmitted: (_) => _submit(),
-                ),
-                const SizedBox(height: 16),
-
-                // Password
-                TextField(
-                  controller: _passwordController,
-                  obscureText: _obscurePassword,
-                  style: TextStyle(color: AppColors.textPrimary),
-                  decoration: InputDecoration(
-                    hintText: 'Heslo',
-                    hintStyle: TextStyle(color: AppColors.textTertiary),
-                    prefixIcon: Icon(Icons.lock_outline,
-                        color: AppColors.textSecondary),
-                    suffixIcon: IconButton(
-                      icon: Icon(
-                        _obscurePassword
-                            ? Icons.visibility_off
-                            : Icons.visibility,
-                        color: AppColors.textSecondary,
-                      ),
-                      onPressed: () {
-                        setState(
-                            () => _obscurePassword = !_obscurePassword);
-                      },
-                    ),
-                  ),
-                  onSubmitted: (_) => _submit(),
-                ),
-                const SizedBox(height: 8),
-
-                // Error message
-                if (_errorMessage != null)
-                  Padding(
-                    padding: const EdgeInsets.only(top: 8),
-                    child: Text(
-                      _errorMessage!,
-                      style: const TextStyle(
-                        color: AppColors.error,
-                        fontSize: 13,
-                      ),
-                    ),
-                  ),
-                const SizedBox(height: 24),
-
-                // Submit button
-                SizedBox(
-                  width: double.infinity,
-                  height: 48,
-                  child: ElevatedButton(
-                    onPressed: _isLoading ? null : _submit,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primary,
-                      foregroundColor: Colors.white,
-                      disabledBackgroundColor: AppColors.primary.withValues(alpha: 0.5),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                    child: _isLoading
-                        ? const SizedBox(
-                            width: 22,
-                            height: 22,
-                            child: CircularProgressIndicator(
-                              color: Colors.white,
-                              strokeWidth: 2.5,
-                            ),
-                          )
-                        : const Text(
-                            'Přihlásit se',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-              // Close button — top right corner
-              Positioned(
-                top: 12,
-                right: 12,
-                child: GestureDetector(
-                  onTap: () => Navigator.of(context).pop(),
-                  child: Container(
-                    width: 32,
-                    height: 32,
-                    decoration: BoxDecoration(
-                      color: AppColors.backgroundSecondary,
-                      shape: BoxShape.circle,
-                      border: Border.all(color: AppColors.border),
-                    ),
-                    child: Icon(
-                      CupertinoIcons.xmark,
-                      size: 12,
+                    const SizedBox(height: 16),
+                    Text('ZEN POS', style: TextStyle(
+                      color: AppColors.textPrimary,
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 2,
+                    )),
+                    const SizedBox(height: 4),
+                    Text('Admin Panel', style: TextStyle(
                       color: AppColors.textSecondary,
+                      fontSize: 14,
+                    )),
+                    const SizedBox(height: 32),
+
+                    // Email
+                    TextField(
+                      controller: _emailController,
+                      keyboardType: TextInputType.emailAddress,
+                      style: TextStyle(color: AppColors.textPrimary),
+                      decoration: InputDecoration(
+                        hintText: 'E-mail',
+                        hintStyle: TextStyle(color: AppColors.textTertiary),
+                        prefixIcon: Icon(Icons.email_outlined, color: AppColors.textSecondary),
+                      ),
+                      onSubmitted: (_) => _submit(),
                     ),
-                  ),
+                    const SizedBox(height: 16),
+
+                    // Password
+                    TextField(
+                      controller: _passwordController,
+                      obscureText: _obscurePassword,
+                      style: TextStyle(color: AppColors.textPrimary),
+                      decoration: InputDecoration(
+                        hintText: 'Heslo',
+                        hintStyle: TextStyle(color: AppColors.textTertiary),
+                        prefixIcon: Icon(Icons.lock_outline, color: AppColors.textSecondary),
+                        suffixIcon: IconButton(
+                          icon: Icon(
+                            _obscurePassword ? Icons.visibility_off : Icons.visibility,
+                            color: AppColors.textSecondary,
+                          ),
+                          onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+                        ),
+                      ),
+                      onSubmitted: (_) => _submit(),
+                    ),
+                    const SizedBox(height: 8),
+
+                    if (_errorMessage != null)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 8),
+                        child: Text(_errorMessage!, style: const TextStyle(
+                          color: AppColors.error,
+                          fontSize: 13,
+                        )),
+                      ),
+                    const SizedBox(height: 24),
+
+                    // Submit button
+                    SizedBox(
+                      width: double.infinity,
+                      height: 48,
+                      child: ElevatedButton(
+                        onPressed: _isLoading ? null : _submit,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.primary,
+                          foregroundColor: Colors.white,
+                          disabledBackgroundColor: AppColors.primary.withValues(alpha: 0.5),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        child: _isLoading
+                            ? const SizedBox(
+                                width: 22, height: 22,
+                                child: CircularProgressIndicator(
+                                  color: Colors.white, strokeWidth: 2.5),
+                              )
+                            : const Text('Přihlásit se', style: TextStyle(
+                                fontSize: 16, fontWeight: FontWeight.w600)),
+                      ),
+                    ),
+                  ],
                 ),
               ),
-            ],
+            ),
           ),
-        ),
+
+          // Close button — fixed top-right of screen
+          Positioned(
+            top: 20,
+            right: 20,
+            child: GestureDetector(
+              onTap: () => Navigator.of(context).pop(),
+              child: Container(
+                width: 36,
+                height: 36,
+                decoration: BoxDecoration(
+                  color: AppColors.backgroundSecondary,
+                  shape: BoxShape.circle,
+                  border: Border.all(color: AppColors.border),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.06),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
+                ),
+                child: Icon(CupertinoIcons.xmark, size: 13, color: AppColors.textSecondary),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
