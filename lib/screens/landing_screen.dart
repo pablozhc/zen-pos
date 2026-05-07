@@ -158,12 +158,14 @@ class _LandingScreenState extends State<LandingScreen>
                   )),
                 ),
               ),
-              const SizedBox(width: 10),
-              const Text('Zen POS', style: TextStyle(
-                fontFamily: '.SF Pro Display',
-                fontSize: 17, fontWeight: FontWeight.w600,
-                color: Colors.white, letterSpacing: -0.3,
-              )),
+              if (MediaQuery.of(context).size.width >= 480) ...[
+                const SizedBox(width: 10),
+                const Text('Zen POS', style: TextStyle(
+                  fontFamily: '.SF Pro Display',
+                  fontSize: 17, fontWeight: FontWeight.w600,
+                  color: Colors.white, letterSpacing: -0.3,
+                )),
+              ],
             ],
           ),
           const Spacer(),
