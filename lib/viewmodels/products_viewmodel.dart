@@ -24,6 +24,9 @@ class ProductsViewModel extends ChangeNotifier {
   List<Product> get products => List.unmodifiable(_products);
 
   Future<void> _initialize() async {
+    // Streamy smí startovat až po přihlášení a navázání tenanta
+    await FirestoreService().ready;
+
     if (await _repo.isCategoriesEmpty()) {
       final defaultCategories = [
         ProductCategory(id: 'food', title: 'Jídlo', emoji: '🍔'),

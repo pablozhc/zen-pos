@@ -37,6 +37,9 @@ class TablesViewModel extends ChangeNotifier {
   double get todayRevenue => activeTables.fold(0.0, (sum, t) => sum + t.displayAmount);
 
   Future<void> _initialize() async {
+    // Streamy smí startovat až po přihlášení a navázání tenanta
+    await FirestoreService().ready;
+
     if (await _repo.isTablesEmpty()) {
       for (int i = 1; i <= 10; i++) {
         final table = TableModel(

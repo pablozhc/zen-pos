@@ -8,11 +8,18 @@ import 'package:firebase_core/firebase_core.dart';
 import '../models/staff_model.dart';
 import '../repositories/staff_repository.dart';
 import '../repositories/firestore_repositories.dart';
+import '../models/tenant_model.dart';
 import '../services/firestore_service.dart';
+import '../services/tenant_service.dart';
 
 class AuthViewModel extends ChangeNotifier {
   final StaffRepository _repo;
+  final FirestoreService _firestore = FirestoreService();
+  final TenantService _tenants = TenantService();
   final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
+
+  Tenant? _tenant;
+  Tenant? get tenant => _tenant;
 
   AuthViewModel([StaffRepository? repo])
       : _repo = repo ?? FirestoreStaffRepository(FirestoreService()) {
@@ -54,6 +61,10 @@ class AuthViewModel extends ChangeNotifier {
   }
 
   Future<void> _initialize() async {
+    // Čekej na tenant binding (proběhne po přihlášení v _resolveTenant) —
+    // před ním nesmí padnout jediné čtení, rules by ho odmítly.
+    await _firestore.ready;
+
     // Seed default roles if empty
     if (await _repo.isRolesEmpty()) {
       await _repo.setRole(StaffRole(
@@ -66,16 +77,6 @@ class AuthViewModel extends ChangeNotifier {
         id: 'role_waiter',
         name: 'Číšník',
         permissions: ['tables', 'orders', 'payments'],
-      ));
-    }
-
-    // Seed default admin user if empty (without Firebase Auth — user registers via UI)
-    if (await _repo.isStaffEmpty()) {
-      await _repo.setStaff(StaffMember(
-        id: 'staff_admin',
-        name: 'Admin',
-        pinHash: hashString('0000'),
-        roleId: 'role_admin',
       ));
     }
 
@@ -93,6 +94,31 @@ class AuthViewModel extends ChangeNotifier {
       }
       notifyListeners();
     });
+  }
+
+  /// Po Firebase přihlášení: najdi tenant uživatele, případně založ nový
+  /// (s jednorázovou migrací legacy dat) a připoj FirestoreService.
+  Future<String?> _resolveTenant(User user) async {
+    if (_tenant != null) return null;
+    try {
+      var t = await _tenants.findTenantForUser(user.uid);
+      if (t == null) {
+        t = await _tenants.createTenant(
+          name: 'Můj podnik',
+          ownerUid: user.uid,
+          ownerEmail: user.email,
+        );
+        if (await _tenants.legacyDataExists()) {
+          await _tenants.migrateLegacyData(t.id);
+        }
+      }
+      _tenant = t;
+      _firestore.bindTenant(t.id);
+      notifyListeners();
+      return null;
+    } catch (e) {
+      return 'Nepodařilo se načíst podnik: $e';
+    }
   }
 
   Future<void> waitUntilReady() => _readyCompleter.future;
@@ -124,13 +150,33 @@ class AuthViewModel extends ChangeNotifier {
         email: email,
         password: password,
       );
-      final uid = credential.user?.uid;
-      if (uid == null) return 'Přihlášení selhalo';
+      final user = credential.user;
+      if (user == null) return 'Přihlášení selhalo';
 
-      final member = await _repo.getStaffByFirebaseUid(uid);
-      if (member == null) {
+      final tenantError = await _resolveTenant(user);
+      if (tenantError != null) {
         await _firebaseAuth.signOut();
-        return 'Tento účet není propojen s žádným členem personálu';
+        return tenantError;
+      }
+
+      var member = await _repo.getStaffByFirebaseUid(user.uid);
+      if (member == null) {
+        // Čerstvý tenant bez personálu → přihlášený uživatel je vlastník,
+        // založ mu propojený admin profil. Jinak jde o nepropojený účet.
+        if (await _repo.isStaffEmpty()) {
+          member = StaffMember(
+            id: 'staff_owner',
+            name: user.email?.split('@').first ?? 'Admin',
+            pinHash: hashString('0000'),
+            roleId: 'role_admin',
+          );
+          member.firebaseUid = user.uid;
+          member.username = user.email;
+          await _repo.setStaff(member);
+        } else {
+          await _firebaseAuth.signOut();
+          return 'Tento účet není propojen s žádným členem personálu';
+        }
       }
 
       _currentUser = member;
@@ -181,6 +227,12 @@ class AuthViewModel extends ChangeNotifier {
       final uid = credential.user?.uid;
       if (uid == null) return 'Vytvoření účtu selhalo';
 
+      // Nový admin musí být členem tenanta, jinak ho rules nepustí k datům
+      final tenantId = _tenant?.id;
+      if (tenantId != null) {
+        await _tenants.addMember(tenantId, uid, email: email);
+      }
+
       // Send password reset email so user can set their own password
       await tempAuth.sendPasswordResetEmail(email: email);
 
@@ -213,6 +265,8 @@ class AuthViewModel extends ChangeNotifier {
   void logout() {
     _firebaseAuth.signOut();
     _currentUser = null;
+    _tenant = null;
+    _firestore.unbindTenant();
     notifyListeners();
   }
 

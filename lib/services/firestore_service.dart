@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/product_model.dart';
 import '../models/table_model.dart';
@@ -16,20 +17,56 @@ class FirestoreService {
 
   final FirebaseFirestore _db = FirebaseFirestore.instance;
 
-  CollectionReference get _categoriesRef => _db.collection('categories');
-  CollectionReference get _productsRef => _db.collection('products');
-  CollectionReference get _tablesRef => _db.collection('tables');
-  CollectionReference get _paymentsRef => _db.collection('payments');
-  CollectionReference get _cashMovementsRef => _db.collection('cash_movements');
-  CollectionReference get _closuresRef => _db.collection('day_closures');
-  CollectionReference get _stockItemsRef => _db.collection('stock_items');
-  CollectionReference get _stockTransactionsRef => _db.collection('stock_transactions');
-  CollectionReference get _inventoriesRef => _db.collection('inventories');
-  CollectionReference get _suppliersRef => _db.collection('suppliers');
-  CollectionReference get _happyHoursRef => _db.collection('happy_hours');
-  CollectionReference get _addonsRef => _db.collection('product_addons');
+  // ── Tenant binding ──
+  // Veškerá data žijí v `tenants/{tenantId}/...`. Před prvním čtením/zápisem
+  // musí auth vrstva zavolat bindTenant(); viewmodely čekají na `ready`.
+
+  String? _tenantId;
+  Completer<void> _tenantBound = Completer<void>();
+
+  bool get isBound => _tenantId != null;
+  String? get tenantId => _tenantId;
+
+  /// Dokončí se ve chvíli, kdy je nastaven tenant — teprve pak smí
+  /// viewmodely startovat streamy a seedovat data.
+  Future<void> get ready => _tenantBound.future;
+
+  void bindTenant(String tenantId) {
+    _tenantId = tenantId;
+    if (!_tenantBound.isCompleted) _tenantBound.complete();
+  }
+
+  /// Odpojení tenanta (logout). Streamy drží viewmodely, ty se ruší samy.
+  void unbindTenant() {
+    _tenantId = null;
+    _tenantBound = Completer<void>();
+  }
+
+  DocumentReference get _tenantRef {
+    final id = _tenantId;
+    if (id == null) {
+      throw StateError(
+          'FirestoreService: tenant není nastaven (chybí bindTenant po přihlášení)');
+    }
+    return _db.collection('tenants').doc(id);
+  }
+
+  CollectionReference _tcol(String name) => _tenantRef.collection(name);
+
+  CollectionReference get _categoriesRef => _tcol('categories');
+  CollectionReference get _productsRef => _tcol('products');
+  CollectionReference get _tablesRef => _tcol('tables');
+  CollectionReference get _paymentsRef => _tcol('payments');
+  CollectionReference get _cashMovementsRef => _tcol('cash_movements');
+  CollectionReference get _closuresRef => _tcol('day_closures');
+  CollectionReference get _stockItemsRef => _tcol('stock_items');
+  CollectionReference get _stockTransactionsRef => _tcol('stock_transactions');
+  CollectionReference get _inventoriesRef => _tcol('inventories');
+  CollectionReference get _suppliersRef => _tcol('suppliers');
+  CollectionReference get _happyHoursRef => _tcol('happy_hours');
+  CollectionReference get _addonsRef => _tcol('product_addons');
   DocumentReference get _posSettingsRef =>
-      _db.collection('settings').doc('pos_settings');
+      _tcol('settings').doc('pos_settings');
 
   // ── Categories ──
 
@@ -134,7 +171,7 @@ class FirestoreService {
 
   // ── Roles ──
 
-  CollectionReference get _rolesRef => _db.collection('roles');
+  CollectionReference get _rolesRef => _tcol('roles');
 
   Stream<List<StaffRole>> rolesStream() {
     return _rolesRef.snapshots().map((snapshot) {
@@ -155,7 +192,7 @@ class FirestoreService {
 
   // ── Staff ──
 
-  CollectionReference get _staffRef => _db.collection('staff');
+  CollectionReference get _staffRef => _tcol('staff');
 
   Stream<List<StaffMember>> staffStream() {
     return _staffRef.snapshots().map((snapshot) {
@@ -378,7 +415,7 @@ class FirestoreService {
   // ── Seeding ──
 
   Future<bool> isCollectionEmpty(String collection) async {
-    final snapshot = await _db.collection(collection).limit(1).get();
+    final snapshot = await _tcol(collection).limit(1).get();
     return snapshot.docs.isEmpty;
   }
 }

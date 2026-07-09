@@ -102,13 +102,22 @@ Sidebar sekce:
 - Inventury (draft → completed → approved)
 - Přehled dodavatelů
 
-## Firebase kolekce
-- `categories`, `products`, `tables`, `payments`
-- `staff`, `roles`
-- `cash_movements`, `day_closures`
-- `stock_items`, `stock_transactions`, `inventories`, `suppliers`
-- `happy_hours`, `product_addons`
-- `settings/pos_settings`
+## Firebase datový model (multi-tenant)
+Veškerá provozní data žijí pod `tenants/{tenantId}/...`:
+- `tenants/{id}` — dokument podniku: `name`, `ownerUid`, `memberUids[]`, `memberEmails[]`, `createdAt`
+- Subkolekce: `categories`, `products`, `tables`, `payments`, `staff`, `roles`,
+  `cash_movements`, `day_closures`, `stock_items`, `stock_transactions`,
+  `inventories`, `suppliers`, `happy_hours`, `product_addons`, `settings/pos_settings`
+
+**Flow po přihlášení:** `AuthViewModel.loginWithEmail` → `_resolveTenant` (query
+`tenants where memberUids array-contains uid`; když nic → createTenant + jednorázová
+migrace legacy root kolekcí) → `FirestoreService.bindTenant(id)`. Viewmodely čekají
+na `FirestoreService.ready` — před bindingem nesmí proběhnout žádné čtení (rules).
+Nový admin účet přes `registerAdmin` dostává i členství v tenantu (`addMember`).
+
+**Rules (`firestore.rules`):** tenant data jen pro členy (`memberUids`), create jen
+s vlastním uid jako owner. Legacy root kolekce dočasně authenticated-only — smazat
+blok po ověření migrace a vyčištění starých dat.
 
 ## Designové myšlenky vlastníka
 - UI by mělo vypadat jako **nativní Apple aplikace** na iPadu
@@ -131,4 +140,5 @@ flutter run -d chrome --target lib/main.dart         # POS
 ## Firebase projekt
 - Project ID: `zen-pos`
 - Hosting: https://zen-pos.web.app
-- Firestore rules: `allow read, write: if true` (development)
+- Firestore rules: `firestore.rules` v repu (tenant-based, deploy přes
+  `firebase deploy --only firestore:rules`)
