@@ -102,16 +102,11 @@ class AuthViewModel extends ChangeNotifier {
     if (_tenant != null) return null;
     try {
       var t = await _tenants.findTenantForUser(user.uid);
-      if (t == null) {
-        t = await _tenants.createTenant(
-          name: 'Můj podnik',
-          ownerUid: user.uid,
-          ownerEmail: user.email,
-        );
-        if (await _tenants.legacyDataExists()) {
-          await _tenants.migrateLegacyData(t.id);
-        }
-      }
+      t ??= await _tenants.createTenant(
+        name: 'Můj podnik',
+        ownerUid: user.uid,
+        ownerEmail: user.email,
+      );
       _tenant = t;
       _firestore.bindTenant(t.id);
       notifyListeners();

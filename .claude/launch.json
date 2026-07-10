@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "zen-admin",
+      "runtimeExecutable": "flutter",
+      "runtimeArgs": ["run", "-d", "web-server", "--web-port", "8788", "--target", "lib/main_admin.dart"],
+      "port": 8788
+    }
+  ]
+}

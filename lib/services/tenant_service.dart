@@ -10,14 +10,6 @@ class TenantService {
 
   final FirebaseFirestore _db = FirebaseFirestore.instance;
 
-  /// Root kolekce z doby před multi-tenancy. Drženo v synchronu
-  /// s legacy blokem ve firestore.rules.
-  static const List<String> legacyCollections = [
-    'categories', 'products', 'tables', 'payments', 'staff', 'roles',
-    'cash_movements', 'day_closures', 'stock_items', 'stock_transactions',
-    'inventories', 'suppliers', 'happy_hours', 'product_addons', 'settings',
-  ];
-
   Future<Tenant?> findTenantForUser(String uid) async {
     final snap = await _db
         .collection('tenants')
@@ -57,37 +49,4 @@ class TenantService {
     return _db.collection('tenants').doc(tenantId).update({'name': name});
   }
 
-  Future<bool> legacyDataExists() async {
-    for (final name in ['products', 'staff', 'payments']) {
-      final snap = await _db.collection(name).limit(1).get();
-      if (snap.docs.isNotEmpty) return true;
-    }
-    return false;
-  }
-
-  /// Zkopíruje všechny legacy root kolekce do subkolekcí tenanta.
-  /// Idempotentní (set přepíše stejná ID), root data nechává beze změny —
-  /// smazání proběhne ručně až po ověření.
-  Future<int> migrateLegacyData(String tenantId) async {
-    final tenantRef = _db.collection('tenants').doc(tenantId);
-    int copied = 0;
-    for (final name in legacyCollections) {
-      final snap = await _db.collection(name).get();
-      if (snap.docs.isEmpty) continue;
-      WriteBatch batch = _db.batch();
-      int inBatch = 0;
-      for (final d in snap.docs) {
-        batch.set(tenantRef.collection(name).doc(d.id), d.data());
-        copied++;
-        inBatch++;
-        if (inBatch == 450) {
-          await batch.commit();
-          batch = _db.batch();
-          inBatch = 0;
-        }
-      }
-      if (inBatch > 0) await batch.commit();
-    }
-    return copied;
-  }
 }

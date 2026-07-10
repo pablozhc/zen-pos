@@ -26,16 +26,5 @@ service cloud.firestore {
       }
     }
 
-    // ── Legacy root collections (pre-tenant data) ──
-    // Authenticated-only, kept for one-time migration into a tenant.
-    // TODO: delete this block after legacy data is removed.
-    match /{collection}/{docId} {
-      allow read, write: if request.auth != null
-        && collection in [
-          'categories', 'products', 'tables', 'payments', 'staff', 'roles',
-          'cash_movements', 'day_closures', 'stock_items', 'stock_transactions',
-          'inventories', 'suppliers', 'happy_hours', 'product_addons', 'settings'
-        ];
-    }
   }
 }
